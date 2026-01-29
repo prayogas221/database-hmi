@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database HMI Mimika</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{font-family:system-ui}
+.hidden{display:none}
+</style>
+</head>
+
+<body class="bg-slate-100 min-h-screen p-6">
+
+<!-- LOGIN -->
+<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
+  <h2 class="text-2xl font-bold mb-4 text-center">Login Database HMI Mimika</h2>
+  <input id="user" placeholder="Username" class="border p-2 w-full mb-3 rounded">
+  <input id="pass" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
+  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded">Masuk</button>
+  <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Login salah</p>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<header class="bg-gradient-to-r from-green-800 to-yellow-500 text-white text-center p-5 rounded-3xl shadow mb-6">
+  <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA</h1>
+  <p id="roleText" class="mt-1 text-sm"></p>
+</header>
+
+<div class="flex gap-3 mb-6 justify-center">
+  <button onclick="showTab('profil')" class="tab btn">Profil</button>
+  <button onclick="showTab('info')" class="tab btn">Infografis</button>
+  <button onclick="showTab('tambah')" class="tab btn">Tambah Anggota</button>
+</div>
+
+<!-- PROFIL -->
+<div id="profil" class="tabPage bg-white p-5 rounded-xl shadow">
+  <div class="flex justify-between mb-3">
+    <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-1/2">
+    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 rounded">Download CSV</button>
+  </div>
+  <div class="overflow-auto">
+    <table class="w-full text-sm border">
+      <thead class="bg-amber-700 text-white">
+        <tr id="thead"></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- INFOGRAFIS -->
+<div id="info" class="tabPage hidden bg-white p-5 rounded-xl shadow">
+  <canvas id="chart1"></canvas>
+  <canvas id="chart2" class="mt-8"></canvas>
+</div>
+
+<!-- TAMBAH -->
+<div id="tambah" class="tabPage hidden bg-white p-5 rounded-xl shadow">
+  <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+  class="w-full min-h-[600px] border-0"></iframe>
+</div>
+
+<footer class="text-center mt-8 text-gray-500">IT Nesacip 2025</footer>
+</div>
+
+<script>
+const USERS={
+ ekonomi:{pass:"eko123",kom:"Komisariat Ekonomi"},
+ insan:{pass:"insan123",kom:"Komisariat Insan Cita"},
+ lafran:{pass:"lafran123",kom:"Komisariat Lafran Pane"},
+ cabang:{pass:"admin123",kom:"ALL"}
+};
+
+let role=""; let rows=[];
+
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSaGF4w9j1HOTUJcpdBltUZ4N2hkZIqUpD6tJ4OkKkuHaYkWObiKnloTYC0rK1at5UYA16GmPUm7BNa/pub?gid=0&single=true&output=csv";
+
+function login(){
+ let u=user.value.trim(); let p=pass.value;
+ if(USERS[u] && USERS[u].pass===p){
+   role=USERS[u].kom;
+   loginBox.classList.add("hidden");
+   app.classList.remove("hidden");
+   roleText.innerText="Akses: "+role;
+   loadData();
+ } else loginErr.classList.remove("hidden");
+}
+
+async function loadData(){
+ let t=await fetch(sheetURL).then(r=>r.text());
+ let arr=t.split("\n").map(r=>r.split(","));
+ let head=arr.shift();
+ rows=arr;
+ renderHead(head);
+ render();
+ buildCharts();
+}
+
+function filterRows(){
+ let f=search.value.toLowerCase();
+ return rows.filter(r=>{
+   let komis=r[13];
+   if(role!=="ALL" && komis!==role) return false;
+   return r.join(" ").toLowerCase().includes(f);
+ });
+}
+
+function renderHead(h){
+ thead.innerHTML=h.map(x=>`<th class="p-2 border">${x}</th>`).join("");
+}
+
+function render(){
+ let d=filterRows();
+ tbody.innerHTML=d.map(r=>`<tr>${r.map(c=>`<td class="border p-1">${c}</td>`).join("")}</tr>`).join("");
+}
+
+function showTab(id){
+ document.querySelectorAll(".tabPage").forEach(x=>x.classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+}
+
+function downloadCSV(){
+ let d=filterRows();
+ let csv=d.map(r=>r.join(",")).join("\n");
+ let blob=new Blob([csv],{type:"text/csv"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="data_"+role+".csv";
+ a.click();
+}
+
+function buildCharts(){
+ let komis={}; let kampus={};
+ rows.forEach(r=>{
+  komis[r[13]]=(komis[r[13]]||0)+1;
+  kampus[r[12]]=(kampus[r[12]]||0)+1;
+ });
+ new Chart(chart1,{type:"bar",
+ data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
+ options:{indexAxis:"y"}});
+ new Chart(chart2,{type:"bar",
+ data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
+ options:{indexAxis:"y"}});
+}
+</script>
+</body>
+</html>
