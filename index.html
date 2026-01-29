@@ -3,30 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Database HMI Mimika</title>
+<title>DATABASE HMI MIMIKA</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{font-family:system-ui}
 .hidden{display:none}
+.tabBtn{padding:8px 16px;border-radius:999px;background:#e5e7eb}
+.tabBtn.active{background:#166534;color:white}
 </style>
 </head>
 
-<body class="bg-slate-100 min-h-screen p-6">
+<body class="bg-slate-100 min-h-screen p-4">
 
 <!-- LOGIN -->
-<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow">
+<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20">
   <h2 class="text-2xl font-bold mb-4 text-center">Login Database HMI Mimika</h2>
   <input id="user" placeholder="Username" class="border p-2 w-full mb-3 rounded">
   <input id="pass" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
   <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded">Masuk</button>
-  <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Login salah</p>
+  <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Username / Password salah</p>
 </div>
 
 <!-- APP -->
-<div id="app" class="hidden">
+<div id="app" class="hidden max-w-7xl mx-auto">
 
 <header class="bg-gradient-to-r from-green-800 to-yellow-500 text-white text-center p-5 rounded-3xl shadow mb-6">
   <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA</h1>
@@ -34,20 +35,20 @@ body{font-family:system-ui}
 </header>
 
 <div class="flex gap-3 mb-6 justify-center">
-  <button onclick="showTab('profil')" class="tab btn">Profil</button>
-  <button onclick="showTab('info')" class="tab btn">Infografis</button>
-  <button onclick="showTab('tambah')" class="tab btn">Tambah Anggota</button>
+  <button class="tabBtn active" onclick="showTab('profil',this)">Profil</button>
+  <button class="tabBtn" onclick="showTab('info',this)">Infografis</button>
+  <button class="tabBtn" onclick="showTab('tambah',this)">Tambah Anggota</button>
 </div>
 
 <!-- PROFIL -->
 <div id="profil" class="tabPage bg-white p-5 rounded-xl shadow">
-  <div class="flex justify-between mb-3">
-    <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-1/2">
-    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 rounded">Download CSV</button>
+  <div class="flex flex-wrap gap-3 justify-between mb-3">
+    <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-full md:w-1/2">
+    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded">Download CSV</button>
   </div>
-  <div class="overflow-auto">
+  <div class="overflow-auto max-h-[70vh]">
     <table class="w-full text-sm border">
-      <thead class="bg-amber-700 text-white">
+      <thead class="bg-amber-700 text-white sticky top-0">
         <tr id="thead"></tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -57,20 +58,24 @@ body{font-family:system-ui}
 
 <!-- INFOGRAFIS -->
 <div id="info" class="tabPage hidden bg-white p-5 rounded-xl shadow">
+  <h2 class="font-bold mb-2">Jumlah Anggota per Komisariat</h2>
   <canvas id="chart1"></canvas>
-  <canvas id="chart2" class="mt-8"></canvas>
+
+  <h2 class="font-bold mt-8 mb-2">Jumlah Anggota per Perguruan Tinggi</h2>
+  <canvas id="chart2"></canvas>
 </div>
 
 <!-- TAMBAH -->
 <div id="tambah" class="tabPage hidden bg-white p-5 rounded-xl shadow">
   <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-  class="w-full min-h-[600px] border-0"></iframe>
+  class="w-full min-h-[650px] border-0"></iframe>
 </div>
 
 <footer class="text-center mt-8 text-gray-500">IT Nesacip 2025</footer>
 </div>
 
 <script>
+/* ===== USER LOGIN ===== */
 const USERS={
  ekonomi:{pass:"eko123",kom:"Komisariat Ekonomi"},
  insan:{pass:"insan123",kom:"Komisariat Insan Cita"},
@@ -78,10 +83,12 @@ const USERS={
  cabang:{pass:"admin123",kom:"ALL"}
 };
 
-let role=""; let rows=[];
-
+/* ===== SPREADSHEET ===== */
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSaGF4w9j1HOTUJcpdBltUZ4N2hkZIqUpD6tJ4OkKkuHaYkWObiKnloTYC0rK1at5UYA16GmPUm7BNa/pub?gid=0&single=true&output=csv";
 
+let role="", rows=[], headers=[];
+
+/* ===== LOGIN ===== */
 function login(){
  let u=user.value.trim(); let p=pass.value;
  if(USERS[u] && USERS[u].pass===p){
@@ -93,27 +100,30 @@ function login(){
  } else loginErr.classList.remove("hidden");
 }
 
+/* ===== LOAD DATA ===== */
 async function loadData(){
  let t=await fetch(sheetURL).then(r=>r.text());
- let arr=t.split("\n").map(r=>r.split(","));
- let head=arr.shift();
+ let arr=t.trim().split("\n").map(r=>r.split(","));
+ headers=arr.shift();
  rows=arr;
- renderHead(head);
+ renderHead();
  render();
  buildCharts();
 }
 
+/* ===== FILTER ===== */
 function filterRows(){
  let f=search.value.toLowerCase();
  return rows.filter(r=>{
-   let komis=r[13];
+   let komis=r[13]; // kolom N
    if(role!=="ALL" && komis!==role) return false;
    return r.join(" ").toLowerCase().includes(f);
  });
 }
 
-function renderHead(h){
- thead.innerHTML=h.map(x=>`<th class="p-2 border">${x}</th>`).join("");
+/* ===== TABLE ===== */
+function renderHead(){
+ thead.innerHTML=headers.map(x=>`<th class="p-2 border">${x}</th>`).join("");
 }
 
 function render(){
@@ -121,14 +131,18 @@ function render(){
  tbody.innerHTML=d.map(r=>`<tr>${r.map(c=>`<td class="border p-1">${c}</td>`).join("")}</tr>`).join("");
 }
 
-function showTab(id){
+/* ===== TABS ===== */
+function showTab(id,btn){
  document.querySelectorAll(".tabPage").forEach(x=>x.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
+ document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"));
+ btn.classList.add("active");
 }
 
+/* ===== DOWNLOAD ===== */
 function downloadCSV(){
  let d=filterRows();
- let csv=d.map(r=>r.join(",")).join("\n");
+ let csv=[headers.join(","),...d.map(r=>r.join(","))].join("\n");
  let blob=new Blob([csv],{type:"text/csv"});
  let a=document.createElement("a");
  a.href=URL.createObjectURL(blob);
@@ -136,19 +150,26 @@ function downloadCSV(){
  a.click();
 }
 
+/* ===== CHART ===== */
 function buildCharts(){
- let komis={}; let kampus={};
+ let komis={}, kampus={};
+
  rows.forEach(r=>{
   komis[r[13]]=(komis[r[13]]||0)+1;
   kampus[r[12]]=(kampus[r[12]]||0)+1;
  });
+
  new Chart(chart1,{type:"bar",
- data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
- options:{indexAxis:"y"}});
+  data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
+  options:{indexAxis:"y",plugins:{legend:{display:false}}}
+ });
+
  new Chart(chart2,{type:"bar",
- data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
- options:{indexAxis:"y"}});
+  data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
+  options:{indexAxis:"y",plugins:{legend:{display:false}}}
+ });
 }
 </script>
+
 </body>
 </html>
