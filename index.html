@@ -1,0 +1,204 @@
+<script>
+// ================= LOGIN =================
+const users = {
+  cabang: {password:'12345', komisariat:'all'},
+  'komisariat ekonomi': {password:'12345', komisariat:'Komisariat Ekonomi'},
+  'komisariat insan cita': {password:'12345', komisariat:'Komisariat Insan Cita'},
+  'komisariat lafran pane': {password:'12345', komisariat:'Komisariat Lafran Pane'}
+};
+let currentUser = null;
+
+document.getElementById('login-btn').addEventListener('click', ()=>{
+  const u = document.getElementById('username').value.toLowerCase().trim();
+  const p = document.getElementById('password').value.trim();
+  if(users[u] && users[u].password===p){
+    currentUser = users[u];
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('main-screen').classList.remove('hidden');
+    initApp();
+  } else {
+    document.getElementById('login-error').classList.remove('hidden');
+  }
+});
+
+// ================= CSV PARSER =================
+function parseCSV(text){
+  const rows=[];
+  let row=[], cur="", inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], n=text[i+1];
+    if(c=='"' && inQuotes && n=='"'){cur+='"'; i++;}
+    else if(c=='"'){inQuotes=!inQuotes;}
+    else if(c==',' && !inQuotes){row.push(cur); cur="";}
+    else if((c=='\n' || c=='\r') && !inQuotes){
+      if(cur || row.length){row.push(cur); rows.push(row);}
+      row=[]; cur="";
+    } else cur+=c;
+  }
+  if(cur || row.length){row.push(cur); rows.push(row);}
+  return rows;
+}
+
+// ================= DATA =================
+let membersData = [];
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSaGF4w9j1HOTUJcpdBltUZ4N2hkZIqUpD6tJ4OkKkuHaYkWObiKnloTYC0rK1at5UYA16GmPUm7BNa/pub?gid=0&single=true&output=csv';
+
+async function loadMembers(){
+  const res = await fetch(csvUrl);
+  const text = await res.text();
+  const rows = parseCSV(text).slice(1);
+
+  membersData = rows.map(cols=>({
+      nik: cols[3],
+      nama: cols[4],
+      telp: cols[5],
+      email: cols[6],
+      tanggal_lahir: cols[7],
+      alamat: cols[8],
+      jenis_kelamin: cols[9],
+      status: cols[10],
+      tahun_masuk: cols[11],
+      perguruan_tinggi: cols[12],
+      komisariat: cols[13],
+      foto: cols[14]
+  })).filter(m=>{
+    return currentUser.komisariat==='all' || m.komisariat===currentUser.komisariat;
+  });
+}
+
+// ================= RENDER PROFIL =================
+let currentPage=1;
+let rowsPerPage=10;
+
+function renderMembers(){
+  const container = document.getElementById('members-container');
+  let data = [...membersData];
+
+  const search = document.getElementById('quick-search').value.toLowerCase();
+  if(search){
+    data = data.filter(m=>
+      (m.nama||'').toLowerCase().includes(search) ||
+      (m.nik||'').toLowerCase().includes(search) ||
+      (m.komisariat||'').toLowerCase().includes(search)
+    );
+  }
+
+  const totalPages = rowsPerPage==='all'?1:Math.ceil(data.length/rowsPerPage);
+  if(rowsPerPage!=='all'){
+    data = data.slice((currentPage-1)*rowsPerPage, currentPage*rowsPerPage);
+  }
+
+  container.innerHTML = data.map(m=>`
+    <div class="glass-effect rounded-xl p-4 shadow-md flex flex-col md:flex-row gap-4">
+      <img src="${m.foto}" onerror="this.src='https://via.placeholder.com/150'"
+           class="photo-thumb w-24 h-24 rounded-lg object-cover"
+           onclick="showPhotoPopup('${m.foto}')">
+      <div class="flex-1 text-sm">
+        <h3 class="font-bold text-lg">${m.nama||'-'}</h3>
+        <p>NIK: ${m.nik||'-'}</p>
+        <p>📞 ${m.telp||'-'}</p>
+        <p>📧 ${m.email||'-'}</p>
+        <p>🎂 ${m.tanggal_lahir||'-'}</p>
+        <p>👤 ${m.jenis_kelamin||'-'}</p>
+        <p>📍 ${m.alamat||'-'}</p>
+        <p>✅ ${m.status||'-'}</p>
+        <p>📅 ${m.tahun_masuk||'-'}</p>
+        <p>🎓 ${m.perguruan_tinggi||'-'}</p>
+        <p>🏛️ ${m.komisariat||'-'}</p>
+      </div>
+    </div>
+  `).join('');
+
+  renderPagination(totalPages);
+}
+
+// ================= PAGINATION =================
+function renderPagination(totalPages){
+  const container = document.getElementById('pagination');
+  if(totalPages<=1){container.innerHTML='';return;}
+  let html='';
+  for(let i=1;i<=totalPages;i++){
+    html+=`<button class="px-3 py-1 border rounded ${i===currentPage?'bg-green-500 text-white':'bg-white'}" onclick="gotoPage(${i})">${i}</button>`;
+  }
+  container.innerHTML=html;
+}
+function gotoPage(p){currentPage=p;renderMembers();}
+
+// ================= FILTER =================
+document.getElementById('quick-search').addEventListener('input', ()=>{currentPage=1;renderMembers();});
+document.getElementById('rows-per-page').addEventListener('change',(e)=>{
+  rowsPerPage=e.target.value==='all'?'all':parseInt(e.target.value);
+  currentPage=1;renderMembers();
+});
+document.getElementById('reset-filter').addEventListener('click', ()=>{
+  document.getElementById('quick-search').value='';
+  document.getElementById('rows-per-page').value=10;
+  rowsPerPage=10; currentPage=1; renderMembers();
+});
+
+// ================= POPUP FOTO =================
+function showPhotoPopup(src){
+  document.getElementById('popup-image').src=src;
+  document.getElementById('photo-popup').classList.add('active');
+}
+function hidePhotoPopup(){
+  document.getElementById('photo-popup').classList.remove('active');
+}
+
+// ================= DOWNLOAD =================
+document.getElementById('download-btn').addEventListener('click', ()=>{
+  let csv = "NIK,Nama,Telp,Email,Tanggal Lahir,Alamat,Jenis Kelamin,Status,Tahun Masuk,Perguruan Tinggi,Komisariat\n";
+  membersData.forEach(m=>{
+    csv+=`${m.nik},${m.nama},${m.telp},${m.email},${m.tanggal_lahir},${m.alamat},${m.jenis_kelamin},${m.status},${m.tahun_masuk},${m.perguruan_tinggi},${m.komisariat}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='HMI_Mimika.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// ================= TAB =================
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(c=>c.style.display='none');
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.remove('bg-amber-700','text-white');
+    b.classList.add('bg-white','text-gray-800');
+  });
+  document.getElementById('content-'+tab).style.display='block';
+  const btn=document.getElementById('tab-'+tab);
+  btn.classList.add('bg-amber-700','text-white');
+}
+document.getElementById('tab-profil').onclick=()=>switchTab('profil');
+document.getElementById('tab-infografis').onclick=()=>switchTab('infografis');
+document.getElementById('tab-tambah').onclick=()=>switchTab('tambah');
+
+// ================= INFOGRAFIS =================
+function renderChart(type){
+  const container=document.getElementById('chart-container');
+  const group={};
+  if(type==='komisariat'){membersData.forEach(m=>group[m.komisariat]=(group[m.komisariat]||0)+1);}
+  else{membersData.forEach(m=>group[m.perguruan_tinggi]=(group[m.perguruan_tinggi]||0)+1);}
+  const maxValue=Math.max(...Object.values(group));
+  container.innerHTML=Object.keys(group).map(k=>{
+    const val=group[k];
+    const width=(val/maxValue*100)+'%';
+    return `<div class="mb-4">
+      <div class="flex justify-between"><span>${k}</span><span>${val} Anggota</span></div>
+      <div class="w-full bg-gray-200 h-6 rounded-full">
+        <div class="h-6 rounded-full text-white text-sm font-semibold flex items-center justify-end pr-2"
+             style="width:${width}; background: linear-gradient(90deg,#2d5016 0%,#d4af37 100%)">${val}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('chart-filter').addEventListener('change',(e)=>renderChart(e.target.value));
+
+// ================= INIT =================
+async function initApp(){
+  await loadMembers();
+  renderMembers();
+  renderChart('komisariat');
+  switchTab('profil');
+}
+</script>
