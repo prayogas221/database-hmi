@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 body {
-    box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
@@ -37,17 +36,36 @@ th {
 tr:hover {
     background-color: #f1f5f9;
 }
-input[type="text"] {
+input, select {
     width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 9999px; /* Bubble style */
     border: 2px solid #ccc;
-    border-radius: 0.5rem;
-    transition: border-color 0.3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
-input[type="text"]:focus {
+input:focus, select:focus {
     border-color: #2d5016;
     outline: none;
+    box-shadow: 0 0 10px rgba(45,80,22,0.3);
+}
+button {
+    background-color: #2d5016;
+    color: white;
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px; /* Bubble style */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+button:hover {
+    background-color: #1b2f0c;
+    transform: translateY(-2px);
+}
+.card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 </style>
 </head>
@@ -56,11 +74,51 @@ input[type="text"]:focus {
 <div class="max-w-7xl mx-auto px-6 py-8">
     <h1 class="text-3xl font-bold text-center mb-6" style="color:#2d5016;">DATABASE ANGGOTA HMI MIMIKA</h1>
 
+    <!-- Modern Bubble Login Bar -->
+    <div class="card mb-6 flex flex-col md:flex-row md:items-center gap-4 justify-between">
+        <input type="text" id="loginUsername" placeholder="Username" class="flex-1">
+        <input type="password" id="loginPassword" placeholder="Password" class="flex-1">
+        <button onclick="login()">Login</button>
+        <div id="loginStatus" class="text-red-600 font-semibold"></div>
+    </div>
+
+    <!-- Add Member Form (hidden by default, appear after login) -->
+    <div id="addMemberCard" class="card mb-6 hidden">
+        <h2 class="font-bold mb-4 text-lg">Tambah Anggota Baru</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="text" id="addNik" placeholder="NIK">
+            <input type="text" id="addNama" placeholder="Nama Lengkap">
+            <input type="text" id="addTelp" placeholder="Nomor Telepon/HP">
+            <input type="text" id="addEmail" placeholder="Email">
+            <input type="text" id="addTglLahir" placeholder="Tanggal Lahir">
+            <input type="text" id="addAlamat" placeholder="Alamat">
+            <select id="addJenisKelamin">
+                <option value="">Jenis Kelamin</option>
+                <option value="Laki-Laki">Laki-Laki</option>
+                <option value="Perempuan">Perempuan</option>
+            </select>
+            <select id="addStatus">
+                <option value="">Status Anggota</option>
+                <option value="Aktif">Aktif</option>
+                <option value="Tidak Aktif">Tidak Aktif</option>
+            </select>
+            <input type="text" id="addTahun" placeholder="Masuk HMI Tahun">
+            <input type="text" id="addPT" placeholder="Perguruan Tinggi">
+            <input type="text" id="addKomisariat" placeholder="Komisariat Asal">
+            <input type="text" id="addJabatan" placeholder="Jabatan di HMI">
+            <input type="text" id="addPosisi" placeholder="Posisi Jabatan">
+        </div>
+        <div class="mt-4 flex items-center gap-3">
+            <button onclick="addMember()">Tambah Anggota</button>
+            <span id="addStatusMsg" class="text-green-700 font-semibold"></span>
+        </div>
+    </div>
+
     <!-- Search Box -->
-    <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT...">
+    <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT..." class="mb-4">
 
     <!-- Table -->
-    <div class="table-container">
+    <div class="table-container mt-2">
         <table id="membersTable">
             <thead>
                 <tr>
@@ -80,7 +138,7 @@ input[type="text"]:focus {
                 </tr>
             </thead>
             <tbody>
-                <!-- Data akan diisi oleh JS -->
+                <tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>
             </tbody>
         </table>
     </div>
@@ -89,26 +147,47 @@ input[type="text"]:focus {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
+let members = [];
 
+// Login Function
+function login() {
+    const user = document.getElementById("loginUsername").value;
+    const pass = document.getElementById("loginPassword").value;
+    const status = document.getElementById("loginStatus");
+    if(user === "admin" && pass === "admin") {
+        status.textContent = "Login berhasil!";
+        status.style.color = "green";
+        document.getElementById("addMemberCard").classList.remove("hidden");
+    } else {
+        status.textContent = "Username atau password salah!";
+        status.style.color = "red";
+        document.getElementById("addMemberCard").classList.add("hidden");
+    }
+}
+
+// Load CSV
 function fetchAndRenderCSV() {
     Papa.parse(csvUrl, {
         download: true,
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            const data = results.data;
-            renderTable(data);
+            members = results.data;
+            renderTable(members);
         }
     });
 }
 
+// Render table
 function renderTable(data) {
     const tbody = document.querySelector("#membersTable tbody");
     tbody.innerHTML = "";
+    if(!data.length){
+        tbody.innerHTML = '<tr><td colspan="13" class="text-center py-4">Data tidak ditemukan</td></tr>';
+        return;
+    }
     data.forEach(member => {
         const row = document.createElement("tr");
-
-        // Ambil kolom yang dibutuhkan saja
         const cols = [
             "Nomor Induk Kader (NIK)",
             "Nama Lengkap",
@@ -124,13 +203,11 @@ function renderTable(data) {
             "Jabatan di HMI",
             "Posisi Jabatan"
         ];
-
         cols.forEach(col => {
             const td = document.createElement("td");
             td.textContent = member[col] || "-";
             row.appendChild(td);
         });
-
         tbody.appendChild(row);
     });
 }
@@ -144,6 +221,30 @@ document.getElementById("searchBox").addEventListener("input", function() {
         row.style.display = text.includes(filter) ? "" : "none";
     });
 });
+
+// Add member
+function addMember() {
+    const newMember = {
+        "Nomor Induk Kader (NIK)": document.getElementById("addNik").value,
+        "Nama Lengkap": document.getElementById("addNama").value,
+        "Nomor Telepon/HP": document.getElementById("addTelp").value,
+        "Alamat Email": document.getElementById("addEmail").value,
+        "Tanggal Lahir": document.getElementById("addTglLahir").value,
+        "Alamat": document.getElementById("addAlamat").value,
+        "Jenis Kelamin": document.getElementById("addJenisKelamin").value,
+        "Status Anggota": document.getElementById("addStatus").value,
+        "Masuk HMI Tahun": document.getElementById("addTahun").value,
+        "Perguruan Tinggi": document.getElementById("addPT").value,
+        "Komisariat Asal": document.getElementById("addKomisariat").value,
+        "Jabatan di HMI": document.getElementById("addJabatan").value,
+        "Posisi Jabatan": document.getElementById("addPosisi").value
+    };
+    members.push(newMember);
+    renderTable(members);
+    const msg = document.getElementById("addStatusMsg");
+    msg.textContent = "Anggota berhasil ditambahkan!";
+    setTimeout(()=>{msg.textContent="";},3000);
+}
 
 // Initialize
 fetchAndRenderCSV();
