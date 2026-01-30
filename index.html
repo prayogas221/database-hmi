@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Database HMI Mimika</title>
+<title>Database HMI Mimika - Admin</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -13,49 +13,27 @@ body {
     padding: 0;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
-.table-container {
-    overflow-x: auto;
-}
-table {
-    border-collapse: collapse;
-    width: 100%;
-}
-th, td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    font-size: 0.95rem;
-}
-th {
-    background: linear-gradient(135deg, #2d5016 0%, #ffffff 100%);
-    color: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-tr:hover {
-    background-color: #f1f5f9;
+input, select, button {
+    transition: all 0.3s;
 }
 input, select {
     width: 100%;
     padding: 0.5rem 0.75rem;
-    border-radius: 9999px; /* Bubble style */
+    border-radius: 9999px;
     border: 2px solid #ccc;
-    transition: border-color 0.3s, box-shadow 0.3s;
 }
 input:focus, select:focus {
     border-color: #2d5016;
-    outline: none;
     box-shadow: 0 0 10px rgba(45,80,22,0.3);
+    outline: none;
 }
 button {
     background-color: #2d5016;
     color: white;
     padding: 0.5rem 1.25rem;
-    border-radius: 9999px; /* Bubble style */
+    border-radius: 9999px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
 }
 button:hover {
     background-color: #1b2f0c;
@@ -66,6 +44,32 @@ button:hover {
     border-radius: 1.5rem;
     padding: 1.5rem;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+}
+.table-container {
+    overflow-x: auto;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+th, td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.95rem;
+    text-align: left;
+}
+th {
+    background: linear-gradient(135deg, #2d5016 0%, #ffffff 100%);
+    color: #fff;
+    position: sticky;
+    top: 0;
+}
+tr:hover {
+    background-color: #f1f5f9;
+}
+#loginCard, #addMemberCard, #tableContainer, #searchBox, #logoutContainer {
+    transition: all 0.5s ease;
 }
 </style>
 </head>
@@ -74,16 +78,22 @@ button:hover {
 <div class="max-w-7xl mx-auto px-6 py-8">
     <h1 class="text-3xl font-bold text-center mb-6" style="color:#2d5016;">DATABASE ANGGOTA HMI MIMIKA</h1>
 
-    <!-- Modern Bubble Login Bar -->
-    <div class="card mb-6 flex flex-col md:flex-row md:items-center gap-4 justify-between">
-        <input type="text" id="loginUsername" placeholder="Username" class="flex-1">
-        <input type="password" id="loginPassword" placeholder="Password" class="flex-1">
-        <button onclick="login()">Login</button>
-        <div id="loginStatus" class="text-red-600 font-semibold"></div>
+    <!-- LOGIN CARD -->
+    <div id="loginCard" class="card max-w-md mx-auto">
+        <h2 class="text-xl font-bold mb-4 text-center">Login Admin</h2>
+        <input type="text" id="loginUsername" placeholder="Username" class="mb-4">
+        <input type="password" id="loginPassword" placeholder="Password" class="mb-4">
+        <button class="w-full" onclick="login()">Login</button>
+        <div id="loginStatus" class="text-red-600 font-semibold mt-2 text-center"></div>
     </div>
 
-    <!-- Add Member Form (hidden by default, appear after login) -->
-    <div id="addMemberCard" class="card mb-6 hidden">
+    <!-- LOGOUT BUTTON -->
+    <div id="logoutContainer" class="text-right mb-4 hidden">
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Add Member Form -->
+    <div id="addMemberCard" class="card hidden">
         <h2 class="font-bold mb-4 text-lg">Tambah Anggota Baru</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input type="text" id="addNik" placeholder="NIK">
@@ -115,10 +125,10 @@ button:hover {
     </div>
 
     <!-- Search Box -->
-    <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT..." class="mb-4">
+    <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT..." class="mb-4 hidden">
 
     <!-- Table -->
-    <div class="table-container mt-2">
+    <div class="table-container hidden" id="tableContainer">
         <table id="membersTable">
             <thead>
                 <tr>
@@ -149,23 +159,45 @@ button:hover {
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 let members = [];
 
-// Login Function
+// LOGIN FUNCTION
 function login() {
     const user = document.getElementById("loginUsername").value;
     const pass = document.getElementById("loginPassword").value;
     const status = document.getElementById("loginStatus");
-    if(user === "admin" && pass === "admin") {
-        status.textContent = "Login berhasil!";
-        status.style.color = "green";
+
+    // contoh multi-level admin
+    const admins = [
+        {username:"admin", password:"admin"},
+        {username:"cabang", password:"cabang123"}
+    ];
+
+    const valid = admins.find(a => a.username === user && a.password === pass);
+
+    if(valid) {
+        document.getElementById("loginCard").classList.add("hidden");
+        document.getElementById("tableContainer").classList.remove("hidden");
         document.getElementById("addMemberCard").classList.remove("hidden");
+        document.getElementById("searchBox").classList.remove("hidden");
+        document.getElementById("logoutContainer").classList.remove("hidden");
+        status.textContent = "";
+        fetchAndRenderCSV();
     } else {
         status.textContent = "Username atau password salah!";
-        status.style.color = "red";
-        document.getElementById("addMemberCard").classList.add("hidden");
     }
 }
 
-// Load CSV
+// LOGOUT FUNCTION
+function logout() {
+    document.getElementById("loginCard").classList.remove("hidden");
+    document.getElementById("tableContainer").classList.add("hidden");
+    document.getElementById("addMemberCard").classList.add("hidden");
+    document.getElementById("searchBox").classList.add("hidden");
+    document.getElementById("logoutContainer").classList.add("hidden");
+    members = [];
+    document.querySelector("#membersTable tbody").innerHTML = '<tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>';
+}
+
+// FETCH CSV
 function fetchAndRenderCSV() {
     Papa.parse(csvUrl, {
         download: true,
@@ -178,7 +210,7 @@ function fetchAndRenderCSV() {
     });
 }
 
-// Render table
+// RENDER TABLE
 function renderTable(data) {
     const tbody = document.querySelector("#membersTable tbody");
     tbody.innerHTML = "";
@@ -212,7 +244,7 @@ function renderTable(data) {
     });
 }
 
-// Search / filter
+// SEARCH / FILTER
 document.getElementById("searchBox").addEventListener("input", function() {
     const filter = this.value.toLowerCase();
     const rows = document.querySelectorAll("#membersTable tbody tr");
@@ -222,7 +254,7 @@ document.getElementById("searchBox").addEventListener("input", function() {
     });
 });
 
-// Add member
+// ADD MEMBER
 function addMember() {
     const newMember = {
         "Nomor Induk Kader (NIK)": document.getElementById("addNik").value,
@@ -239,15 +271,21 @@ function addMember() {
         "Jabatan di HMI": document.getElementById("addJabatan").value,
         "Posisi Jabatan": document.getElementById("addPosisi").value
     };
+
+    // Tambahkan ke array lokal
     members.push(newMember);
     renderTable(members);
+
+    // Reset form
+    document.querySelectorAll('#addMemberCard input, #addMemberCard select').forEach(el=>el.value="");
+
+    // Notifikasi
     const msg = document.getElementById("addStatusMsg");
     msg.textContent = "Anggota berhasil ditambahkan!";
     setTimeout(()=>{msg.textContent="";},3000);
-}
 
-// Initialize
-fetchAndRenderCSV();
+    // TODO: Kirim ke Google Sheet / Tally API di sini
+}
 </script>
 
 </body>
