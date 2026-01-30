@@ -3,63 +3,65 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Database HMI Mimika - Admin</title>
+<title>Database HMI Mimika</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 body {
     font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    margin: 0; padding: 0;
+    background: linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
 }
-input, select, button {
-    transition: all 0.3s;
+input:focus { outline: none; }
+.transition-all { transition: all 0.3s ease; }
+
+/* LOGIN BAR */
+#loginBar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg,#2d5016 0%,#000000 50%,#ffffff 100%);
+    padding: 1rem;
+    border-radius: 12px;
+    max-width: 600px;
+    margin: 2rem auto;
 }
-input, select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 9999px;
-    border: 2px solid #ccc;
+#loginBar input {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
 }
-input:focus, select:focus {
-    border-color: #2d5016;
-    box-shadow: 0 0 10px rgba(45,80,22,0.3);
-    outline: none;
-}
-button {
-    padding: 0.5rem 1.25rem;
-    border-radius: 9999px;
+#loginBar button {
+    padding: 0.5rem 1.5rem;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg,#2d5016,#d4af37);
+    color: white;
     font-weight: 600;
     cursor: pointer;
 }
-button:hover {
+#loginBar button:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
 
-/* LOGIN BAR */
-#loginCard {
-    background: linear-gradient(135deg, #2d5016 0%, #000000 100%);
-    color: white;
-    border-radius: 1rem;
-    padding: 2rem;
-    max-width: 400px;
-    margin: auto;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+/* LAYOUT SETELAH LOGIN */
+#mainContent {
+    display: none;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+    display: flex; gap: 1rem;
 }
-
-/* Add Member Tally Button */
-#addMemberButton {
-    background-color: #b5d83c; /* hijau kemeasan */
-    color: white;
-}
-#addMemberButton:hover {
-    background-color: #9cc22f;
-}
-
-/* Table */
 .table-container {
+    flex: 1;
     overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 table {
     border-collapse: collapse;
@@ -67,193 +69,160 @@ table {
 }
 th, td {
     padding: 0.75rem 1rem;
+    text-align: left;
     border-bottom: 1px solid #ddd;
     font-size: 0.95rem;
-    text-align: left;
 }
 th {
-    background: linear-gradient(135deg, #2d5016 0%, #000000 100%);
+    background: linear-gradient(135deg,#2d5016 0%,#ffffff 100%);
     color: #fff;
     position: sticky;
     top: 0;
+    z-index: 10;
 }
-tr:hover {
-    background-color: #f1f5f9;
-}
+tr:hover { background-color: #f1f5f9; }
 
-/* Layout main */
-#mainContent {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
+/* TOMBOL TAMBAH & FORM */
+#addMemberWrapper {
+    width: 350px;
+    flex-shrink: 0;
+    position: relative;
 }
-#tableContainer {
-    flex: 1;
+#addMemberBtn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg,#4CAF50 0%,#FF9800 50%,#ffffff 100%);
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: #000;
 }
-#tallyFormContainer {
-    width: 400px;
-    display: none;
+#addMemberBtn:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+
+/* TALLY FORM PANEL */
+#tallyFormPanel {
+    position: absolute;
+    top: 3.5rem;
+    right: -400px;
+    width: 350px;
+    height: 600px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    overflow: hidden;
+    transition: right 0.5s ease;
+    z-index: 50;
 }
+#tallyFormPanel.active { right: 0; }
+#tallyFormPanel iframe { width: 100%; height: 100%; border: none; border-radius: 12px; }
+
+/* SEARCH BOX */
+#searchBox {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s;
+}
+#searchBox:focus { border-color: #2d5016; }
+
 </style>
 </head>
 <body class="h-full">
 
-<div class="max-w-7xl mx-auto px-6 py-8">
-    <h1 class="text-3xl font-bold text-center mb-6" style="color:#2d5016;">DATABASE ANGGOTA HMI MIMIKA</h1>
+<!-- LOGIN BAR -->
+<div id="loginBar">
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Login</button>
+</div>
 
-    <!-- LOGIN CARD -->
-    <div id="loginCard">
-        <h2 class="text-xl font-bold mb-4 text-center">Login Admin</h2>
-        <input type="text" id="loginUsername" placeholder="Username" class="mb-4">
-        <input type="password" id="loginPassword" placeholder="Password" class="mb-4">
-        <button class="w-full" onclick="login()">Login</button>
-        <div id="loginStatus" class="text-red-300 font-semibold mt-2 text-center"></div>
+<!-- MAIN CONTENT -->
+<div id="mainContent">
+    <!-- TABEL -->
+    <div class="table-container">
+        <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT...">
+        <table id="membersTable">
+            <thead>
+                <tr>
+                    <th>NIK</th>
+                    <th>Nama Lengkap</th>
+                    <th>Nomor Telepon</th>
+                    <th>Email</th>
+                    <th>Tanggal Lahir</th>
+                    <th>Alamat</th>
+                    <th>Jenis Kelamin</th>
+                    <th>Status</th>
+                    <th>Tahun Masuk</th>
+                    <th>Perguruan Tinggi</th>
+                    <th>Komisariat</th>
+                    <th>Jabatan</th>
+                    <th>Posisi</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
 
-    <!-- Logout -->
-    <div id="logoutContainer" class="text-right mb-4 hidden">
-        <button onclick="logout()" class="bg-black text-white px-4 py-2 rounded-full">Logout</button>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="mainContent" class="hidden">
-
-        <!-- Table -->
-        <div class="table-container" id="tableContainer">
-            <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT..." class="mb-4">
-            <table id="membersTable">
-                <thead>
-                    <tr>
-                        <th>NIK</th>
-                        <th>Nama Lengkap</th>
-                        <th>Nomor Telepon/HP</th>
-                        <th>Alamat Email</th>
-                        <th>Tanggal Lahir</th>
-                        <th>Alamat</th>
-                        <th>Jenis Kelamin</th>
-                        <th>Status Anggota</th>
-                        <th>Masuk HMI Tahun</th>
-                        <th>Perguruan Tinggi</th>
-                        <th>Komisariat Asal</th>
-                        <th>Jabatan di HMI</th>
-                        <th>Posisi Jabatan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>
-                </tbody>
-            </table>
-            <button id="addMemberButton" class="mt-4" onclick="showTallyForm()">+ Tambah Anggota</button>
-        </div>
-
-        <!-- Tally Form Embed -->
-        <div id="tallyFormContainer">
-            <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" 
-                    width="100%" height="700" frameborder="0" marginheight="0" marginwidth="0"></iframe>
+    <!-- TAMBAH ANGGOTA -->
+    <div id="addMemberWrapper">
+        <button id="addMemberBtn">➕ Tambah Anggota</button>
+        <div id="tallyFormPanel">
+            <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"></iframe>
         </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
-let members = [];
-
-// LOGIN
-function login() {
-    const user = document.getElementById("loginUsername").value;
-    const pass = document.getElementById("loginPassword").value;
-    const status = document.getElementById("loginStatus");
-
-    const admins = [
-        {username:"admin", password:"admin"},
-        {username:"cabang", password:"cabang123"}
-    ];
-
-    const valid = admins.find(a => a.username === user && a.password === pass);
-
-    if(valid) {
-        document.getElementById("loginCard").style.display = "none";
-        document.getElementById("logoutContainer").classList.remove("hidden");
-        document.getElementById("mainContent").classList.remove("hidden");
-        status.textContent = "";
+// LOGIN MOCK
+document.getElementById('loginBtn').addEventListener('click', () => {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    if(user === "admin" && pass === "admin123") {
+        document.getElementById('loginBar').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'flex';
         fetchAndRenderCSV();
     } else {
-        status.textContent = "Username atau password salah!";
+        alert("Username atau password salah!");
     }
-}
+});
 
-// LOGOUT
-function logout() {
-    document.getElementById("loginCard").style.display = "block";
-    document.getElementById("mainContent").classList.add("hidden");
-    document.getElementById("logoutContainer").classList.add("hidden");
-    members = [];
-    document.querySelector("#membersTable tbody").innerHTML = '<tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>';
-}
+// TOGGLE TALLY FORM
+document.getElementById('addMemberBtn').addEventListener('click', () => {
+    document.getElementById('tallyFormPanel').classList.toggle('active');
+});
 
 // FETCH CSV
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 function fetchAndRenderCSV() {
     Papa.parse(csvUrl, {
         download: true,
         header: true,
         skipEmptyLines: true,
-        complete: function(results) {
-            members = results.data;
-            renderTable(members);
-        }
+        complete: function(results) { renderTable(results.data); }
     });
 }
-
-// RENDER TABLE
 function renderTable(data) {
     const tbody = document.querySelector("#membersTable tbody");
     tbody.innerHTML = "";
-    if(!data.length){
-        tbody.innerHTML = '<tr><td colspan="13" class="text-center py-4">Data tidak ditemukan</td></tr>';
-        return;
-    }
     data.forEach(member => {
-        const row = document.createElement("tr");
-        const cols = [
-            "Nomor Induk Kader (NIK)",
-            "Nama Lengkap",
-            "Nomor Telepon/HP",
-            "Alamat Email",
-            "Tanggal Lahir",
-            "Alamat",
-            "Jenis Kelamin",
-            "Status Anggota",
-            "Masuk HMI Tahun",
-            "Perguruan Tinggi",
-            "Komisariat Asal",
-            "Jabatan di HMI",
-            "Posisi Jabatan"
-        ];
-        cols.forEach(col => {
-            const td = document.createElement("td");
-            td.textContent = member[col] || "-";
-            row.appendChild(td);
-        });
-        tbody.appendChild(row);
+        const cols = ["Nomor Induk Kader (NIK)","Nama Lengkap","Nomor Telepon/HP","Alamat Email","Tanggal Lahir","Alamat","Jenis Kelamin","Status Anggota","Masuk HMI Tahun","Perguruan Tinggi","Komisariat Asal","Jabatan di HMI","Posisi Jabatan"];
+        const tr = document.createElement("tr");
+        cols.forEach(c => { const td = document.createElement("td"); td.textContent = member[c] || "-"; tr.appendChild(td); });
+        tbody.appendChild(tr);
     });
 }
 
 // SEARCH
 document.getElementById("searchBox").addEventListener("input", function() {
     const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll("#membersTable tbody tr");
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = text.includes(filter) ? "" : "none";
+    document.querySelectorAll("#membersTable tbody tr").forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
     });
 });
-
-// SHOW TALLY FORM
-function showTallyForm() {
-    const container = document.getElementById("tallyFormContainer");
-    container.style.display = container.style.display === "block" ? "none" : "block";
-}
 </script>
 
 </body>
