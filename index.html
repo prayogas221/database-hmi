@@ -9,194 +9,268 @@
 <style>
 body {
     font-family: 'Poppins', sans-serif;
-    margin: 0; padding: 0;
-    background: linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
-#loginBar {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:1rem;
-    padding:1rem;
-    background: linear-gradient(90deg,#2d5016,#d4af37);
-    color:white;
-    border-radius:1rem;
-    margin:2rem auto;
-    max-width:500px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+/* Login Page */
+#loginPage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #2d5016 0%, #000 100%);
 }
-#loginBar input {
-    padding:0.5rem 1rem;
-    border-radius:1rem;
-    border:none;
-    outline:none;
-    font-size:1rem;
+.login-container {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    text-align: center;
 }
-#loginBar button {
-    padding:0.5rem 1.5rem;
-    border-radius:1rem;
-    border:none;
-    background:#fff;
-    color:#2d5016;
-    font-weight:600;
-    cursor:pointer;
-    transition:0.3s;
+.login-container h2 {
+    margin-bottom: 1.5rem;
+    color: #2d5016;
+    font-weight: 700;
 }
-#loginBar button:hover { transform:scale(1.05);}
-#mainContent {
-    display:none; /* tersembunyi sampai login sukses */
-    max-width:1200px;
-    margin:2rem auto;
-    display:flex;
-    flex-wrap:wrap;
-    gap:1rem;
+.input-group {
+    position: relative;
+    margin-bottom: 1.5rem;
 }
+.input-group input {
+    width: 100%;
+    padding: 0.75rem 2.5rem 0.75rem 1rem;
+    border-radius: 12px;
+    border: 2px solid #2d5016;
+    outline: none;
+}
+.input-group .toggle-visibility {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #2d5016;
+}
+.login-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #2d5016 0%, #d4af37 100%);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.login-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Dashboard Page */
+#dashboardPage {
+    display: none;
+    padding: 1rem;
+}
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+.dashboard-header h1 {
+    color: #2d5016;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+/* Tabel Anggota */
 .table-container {
-    flex:1 1 65%;
-    overflow-x:auto;
-    background:white;
-    border-radius:1rem;
-    padding:1rem;
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    overflow-x: auto;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    background: white;
 }
 table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: 100%;
 }
 th, td {
-    padding:0.75rem 1rem;
-    text-align:left;
-    border-bottom:1px solid #ddd;
-    font-size:0.95rem;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.9rem;
 }
 th {
-    background: linear-gradient(90deg,#2d5016,#d4af37);
-    color:white;
-    position:sticky;
-    top:0;
+    background: linear-gradient(135deg, #2d5016 0%, #d4af37 100%);
+    color: white;
+    position: sticky;
+    top: 0;
 }
-tr:hover {background-color:#f1f5f9;}
-#searchBox {
-    width:100%;
-    padding:0.5rem 1rem;
-    border-radius:1rem;
-    border:2px solid #ccc;
-    margin-bottom:1rem;
+tr:hover {
+    background-color: #f1f5f9;
 }
-#searchBox:focus { border-color:#2d5016; outline:none; }
+td {
+    border-bottom: 1px solid #eee;
+    border-right: 1px solid #eee;
+}
+td:last-child {
+    border-right: none;
+}
+
+/* Tambah Anggota Button */
 #addMemberBtn {
-    flex:1 1 30%;
-    background:#2d5016;
-    color:white;
-    font-weight:600;
-    padding:1rem;
-    border-radius:2rem;
-    cursor:pointer;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    box-shadow:0 4px 12px rgba(0,0,0,0.2);
-    transition:0.3s;
+    background: linear-gradient(135deg, #2d5016 0%, #d4af37 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.2s;
+    position: sticky;
+    top: 1rem;
 }
-#addMemberBtn:hover { transform:scale(1.05);}
+#addMemberBtn:hover {
+    transform: scale(1.05);
+}
+
+/* Tally Form Slide */
 #tallyFormContainer {
-    flex:1 1 30%;
-    background:#d4af37;
-    border-radius:1rem;
-    overflow:hidden;
-    max-height:0;
-    transition:max-height 0.5s ease;
-}
-#tallyFormContainer iframe {
-    width:100%;
-    border:none;
-    height:600px;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 95%;
+    max-width: 500px;
+    height: 100%;
+    background: white;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+    z-index: 50;
+    transition: right 0.4s ease-in-out;
+    padding: 1rem;
+    overflow-y: auto;
+    border-radius: 16px 0 0 16px;
 }
 #tallyFormContainer.active {
-    max-height:700px; /* ketika muncul */
-    transition:max-height 0.7s ease;
+    right: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    #tallyFormContainer {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+    }
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN BAR -->
-<div id="loginBar">
-    <input type="text" id="username" placeholder="Username">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
+<!-- Login Page -->
+<div id="loginPage">
+    <div class="login-container">
+        <h2>LOGIN HMI MIMIKA</h2>
+        <div class="input-group">
+            <input type="text" id="usernameInput" placeholder="Username">
+            <span class="toggle-visibility" onclick="toggleVisibility('usernameInput')">👁️</span>
+        </div>
+        <div class="input-group">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <span class="toggle-visibility" onclick="toggleVisibility('passwordInput')">👁️</span>
+        </div>
+        <button class="login-btn" onclick="login()">Masuk</button>
+    </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<div id="mainContent">
-    <!-- Tabel -->
+<!-- Dashboard Page -->
+<div id="dashboardPage">
+    <div class="dashboard-header">
+        <h1>Database Anggota HMI Mimika</h1>
+        <button id="addMemberBtn" onclick="toggleTallyForm()">➕ Tambah Anggota</button>
+    </div>
     <div class="table-container">
-        <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT...">
         <table id="membersTable">
             <thead>
                 <tr>
                     <th>NIK</th>
                     <th>Nama Lengkap</th>
-                    <th>Nomor Telepon/HP</th>
-                    <th>Alamat Email</th>
+                    <th>No. Telepon</th>
+                    <th>Email</th>
                     <th>Tanggal Lahir</th>
                     <th>Alamat</th>
                     <th>Jenis Kelamin</th>
-                    <th>Status Anggota</th>
-                    <th>Masuk HMI Tahun</th>
+                    <th>Status</th>
+                    <th>Tahun Masuk</th>
                     <th>Perguruan Tinggi</th>
                     <th>Komisariat Asal</th>
-                    <th>Jabatan di HMI</th>
-                    <th>Posisi Jabatan</th>
+                    <th>Jabatan</th>
+                    <th>Posisi</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+                <!-- Data CSV akan dimasukkan JS -->
+            </tbody>
         </table>
     </div>
+</div>
 
-    <!-- Tombol tambah anggota -->
-    <div style="display:flex; flex-direction:column; gap:1rem;">
-        <div id="addMemberBtn">➕ Tambah Anggota</div>
-        <div id="tallyFormContainer">
-            <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"></iframe>
-        </div>
-    </div>
+<!-- Tally Form Slide -->
+<div id="tallyFormContainer">
+    <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" title="Formulir Tambah Anggota"></iframe>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
-const loginBtn = document.getElementById("loginBtn");
-const mainContent = document.getElementById("mainContent");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
+// Toggle show/hide password or username
+function toggleVisibility(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" || input.type === "text" && id.includes("password") ? "text" : "text";
+    if(input.type === "text" && id.includes("password")) input.type = "text";
+    else if(id.includes("password")) input.type = "password";
+}
 
-loginBtn.addEventListener("click", ()=>{
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value.trim();
-    if(username === "admin" && password === "admin123"){
-        document.getElementById("loginBar").style.display = "none";
-        mainContent.style.display = "flex";
+// Simple login logic
+function login() {
+    const username = document.getElementById("usernameInput").value;
+    const password = document.getElementById("passwordInput").value;
+
+    if(username === "admin" && password === "admin123") {
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("dashboardPage").style.display = "block";
         fetchAndRenderCSV();
     } else {
-        alert("Username atau password salah!");
+        alert("Username atau Password salah!");
     }
-});
+}
 
-// Fetch CSV dan render tabel
+// Tally form toggle
+function toggleTallyForm() {
+    document.getElementById("tallyFormContainer").classList.toggle("active");
+}
+
+// Fetch CSV and render table
 function fetchAndRenderCSV() {
     Papa.parse(csvUrl, {
-        download:true,
-        header:true,
-        skipEmptyLines:true,
-        complete:function(results){
-            renderTable(results.data);
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            const data = results.data;
+            renderTable(data);
         }
     });
 }
 
-function renderTable(data){
+function renderTable(data) {
     const tbody = document.querySelector("#membersTable tbody");
     tbody.innerHTML = "";
     data.forEach(member => {
@@ -216,7 +290,7 @@ function renderTable(data){
             "Jabatan di HMI",
             "Posisi Jabatan"
         ];
-        cols.forEach(col=>{
+        cols.forEach(col => {
             const td = document.createElement("td");
             td.textContent = member[col] || "-";
             row.appendChild(td);
@@ -224,21 +298,6 @@ function renderTable(data){
         tbody.appendChild(row);
     });
 }
-
-// Search filter
-document.getElementById("searchBox").addEventListener("input", function(){
-    const filter = this.value.toLowerCase();
-    document.querySelectorAll("#membersTable tbody tr").forEach(row=>{
-        row.style.display = row.textContent.toLowerCase().includes(filter)?"":"none";
-    });
-});
-
-// Toggle Tally form
-const addMemberBtn = document.getElementById("addMemberBtn");
-const tallyFormContainer = document.getElementById("tallyFormContainer");
-addMemberBtn.addEventListener("click", ()=>{
-    tallyFormContainer.classList.toggle("active");
-});
 </script>
 </body>
 </html>
