@@ -9,21 +9,29 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.hidden{display:none}
+.hidden{display:none;}
 .tabBtn{padding:8px 16px;border-radius:999px;background:#e5e7eb;cursor:pointer;transition:all .3s;}
-.tabBtn.active{background:#166534;color:white}
-.profile-card{border-radius:15px;background:#f7f7f7;padding:15px;margin-bottom:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);}
+.tabBtn.active{background:#166534;color:white;}
+.profile-card{
+  border-radius:15px;
+  background:#f7f7f7;
+  padding:15px;
+  margin-bottom:10px;
+  box-shadow:0 4px 6px rgba(0,0,0,0.1);
+}
+input, button{transition:all .2s;}
+button:hover{opacity:.9;}
 </style>
 </head>
 
-<body class="bg-slate-100 min-h-screen p-4">
+<body class="bg-slate-100 min-h-screen p-4 font-sans">
 
 <!-- ================= LOGIN ================= -->
-<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20">
-  <h2 class="text-2xl font-bold mb-4 text-center">Login Database HMI Mimika</h2>
-  <input id="username" placeholder="Username" class="border p-2 w-full mb-3 rounded">
-  <input id="password" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
-  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded">Masuk</button>
+<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20 border-l-8 border-green-700">
+  <h2 class="text-2xl font-bold mb-4 text-center text-green-800">Login Database HMI Mimika</h2>
+  <input id="username" placeholder="Username" class="border p-2 w-full mb-3 rounded focus:ring-2 focus:ring-green-500">
+  <input id="password" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded focus:ring-2 focus:ring-green-500">
+  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded font-semibold">Masuk</button>
   <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Username / Password salah</p>
 </div>
 
@@ -33,7 +41,7 @@
 <header class="bg-gradient-to-r from-green-800 to-yellow-500 text-white text-center p-5 rounded-3xl shadow mb-6">
   <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA</h1>
   <p id="roleText" class="mt-1 text-sm"></p>
-  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded">Logout</button>
+  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded font-semibold">Logout</button>
 </header>
 
 <div class="flex gap-3 mb-6 justify-center flex-wrap">
@@ -45,8 +53,8 @@
 <!-- PROFIL -->
 <div id="profil" class="tabPage bg-white p-5 rounded-xl shadow">
   <div class="flex flex-wrap gap-3 justify-between mb-3">
-    <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-full md:w-1/2">
-    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded">Download CSV</button>
+    <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-full md:w-1/2 focus:ring-2 focus:ring-green-500">
+    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold">Download CSV</button>
   </div>
   <div id="profileContainer" class="overflow-auto max-h-[70vh]"></div>
 </div>
@@ -137,14 +145,7 @@ function parseCSV(text){
 /* ================= HIDDEN COLUMNS ================= */
 function isHiddenColumn(header){
   const h = header.toLowerCase().trim();
-  return (
-    h.includes("submission") ||
-    h.includes("respondent") ||
-    h.includes("submitted") ||
-    h.includes("pass photo") ||
-    h.includes("passport") ||
-    h.includes("photo")
-  );
+  return /submission|respondent|submitted|pass|photo|passport/.test(h);
 }
 
 /* ================= FILTER ================= */
@@ -165,9 +166,7 @@ function render(){
 
   container.innerHTML = filtered.map(r=>{
     return `<div class="profile-card">
-      ${visibleIndexes.map(i=>{
-        return `<p><strong>${headers[i]}:</strong> ${r[i]}</p>`;
-      }).join("")}
+      ${visibleIndexes.map(i=>`<p><strong>${headers[i]}:</strong> ${r[i]}</p>`).join("")}
     </div>`;
   }).join("");
 }
