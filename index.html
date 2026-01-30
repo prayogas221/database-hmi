@@ -20,20 +20,11 @@ body { font-family: 'Inter', sans-serif; }
 }
 .tabBtn.active { background:#166534; color:white; }
 .tabBtn:hover { transform: scale(1.05); }
-.table-container { overflow-x:auto; }
-table { border-collapse: collapse; width:100%; }
+table { border-collapse: collapse; width:100%; margin-top:10px; }
 th, td { padding: 8px; border: 1px solid #ddd; }
 th { background-color:#166534; color:white; cursor:pointer; }
 tr:hover { background-color:#f1f1f1; }
-.card {
-  background: #fefefe; 
-  padding:15px; 
-  border-radius:15px; 
-  box-shadow:0 3px 10px rgba(0,0,0,0.1); 
-  margin-bottom:15px; 
-  transition:0.3s;
-}
-.card:hover { transform: scale(1.02); }
+input, button { outline:none; }
 </style>
 </head>
 
@@ -69,7 +60,12 @@ tr:hover { background-color:#f1f1f1; }
     <input id="search" oninput="render()" placeholder="Cari nama / NIK / Komisariat" class="border p-2 rounded w-full md:w-1/2">
     <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Download CSV</button>
   </div>
-  <div id="tableView" class="table-container max-h-[70vh] overflow-auto"></div>
+  <div class="overflow-auto max-h-[70vh]">
+    <table class="text-sm w-full">
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- INFOGRAFIS -->
@@ -101,7 +97,6 @@ const USERS = {
 
 let role="", rows=[], headers=[], chartA, chartB;
 
-/* ================= LOGIN ================= */
 function login(){
   const u = document.getElementById("username").value.trim().toLowerCase();
   const p = document.getElementById("password").value.trim();
@@ -122,14 +117,13 @@ function logout(){ location.reload(); }
 /* ================= SPREADSHEET ================= */
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
-/* ================= PARSE CSV ================= */
 async function loadData(){
   const response = await fetch(sheetURL);
   const text = await response.text();
-
   const parsed = parseCSV(text);
-  headers = parsed.shift();
-  rows = parsed;
+  headers = parsed.shift().filter(h=>!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h));
+  rows = parsed.map(r=>r.filter((_,i)=>!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(parsed[0]?.[i])));
+  renderHead();
   render();
   buildCharts();
 }
@@ -152,30 +146,24 @@ function parseCSV(text){
   return result;
 }
 
-/* ================= RENDER PROFIL ================= */
+/* ================= FILTER ================= */
 function filterRows(){
   let f=document.getElementById("search").value.toLowerCase();
   return rows.filter(r=>{
-    let komis=r[13]; 
+    const komis=r[headers.indexOf("Komisariat")]; 
     if(role!=="ALL" && komis!==role) return false;
     return r.join(" ").toLowerCase().includes(f);
   });
 }
 
+/* ================= TABLE ================= */
+function renderHead(){
+  document.getElementById("thead").innerHTML = "<tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr>";
+}
+
 function render(){
   const data = filterRows();
-  const tableDiv = document.getElementById("tableView");
-  tableDiv.innerHTML = "";
-
-  data.forEach(r=>{
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = headers.map((h,i)=>{
-      if(["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h)) return "";
-      return `<p><strong>${h}:</strong> ${r[i] || "-"}</p>`;
-    }).join("");
-    tableDiv.appendChild(card);
-  });
+  document.getElementById("tbody").innerHTML = data.map(r=>"<tr>"+r.map(c=>`<td>${c || "-"}</td>`).join("")+"</tr>").join("");
 }
 
 /* ================= TABS ================= */
@@ -188,10 +176,8 @@ function showTab(id,btn){
 
 /* ================= DOWNLOAD CSV ================= */
 function downloadCSV(){
-  const data = filterRows().map(r=>{
-    return headers.map((h,i)=>["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h)?"":r[i]);
-  });
-  const csv = [headers.filter(h=>!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h)).join(","), ...data.map(r=>r.join(","))].join("\n");
+  const data = filterRows();
+  const csv = [headers.join(","), ...data.map(r=>r.join(","))].join("\n");
   const blob = new Blob([csv],{type:"text/csv"});
   const a = document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -201,28 +187,17 @@ function downloadCSV(){
 
 /* ================= CHART ================= */
 function buildCharts(){
-  let komis={}, kampus={};
+  const komis={}, kampus={};
   rows.forEach(r=>{
-    komis[r[13]]=(komis[r[13]]||0)+1;
-    kampus[r[12]]=(kampus[r[12]]||0)+1;
+    komis[r[headers.indexOf("Komisariat")]] = (komis[r[headers.indexOf("Komisariat")]]||0)+1;
+    kampus[r[headers.indexOf("Perguruan Tinggi")]] = (kampus[r[headers.indexOf("Perguruan Tinggi")]]||0)+1;
   });
-
   if(chartA) chartA.destroy();
   if(chartB) chartB.destroy();
-
-  chartA=new Chart(document.getElementById("chart1"),{
-    type:"bar",
-    data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
-    options:{indexAxis:"y",plugins:{legend:{display:false}}}
-  });
-
-  chartB=new Chart(document.getElementById("chart2"),{
-    type:"bar",
-    data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
-    options:{indexAxis:"y",plugins:{legend:{display:false}}}
-  });
+  chartA=new Chart(document.getElementById("chart1"),{type:"bar",data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});
+  chartB=new Chart(document.getElementById("chart2"),{type:"bar",data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});
 }
-
 </script>
+
 </body>
 </html>
