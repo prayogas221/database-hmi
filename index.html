@@ -10,8 +10,9 @@
 
 <style>
 .hidden{display:none}
-.tabBtn{padding:8px 16px;border-radius:999px;background:#e5e7eb}
+.tabBtn{padding:8px 16px;border-radius:999px;background:#e5e7eb;cursor:pointer;transition:all .3s;}
 .tabBtn.active{background:#166534;color:white}
+.profile-card{border-radius:15px;background:#f7f7f7;padding:15px;margin-bottom:10px;box-shadow:0 4px 6px rgba(0,0,0,0.1);}
 </style>
 </head>
 
@@ -47,14 +48,7 @@
     <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-full md:w-1/2">
     <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded">Download CSV</button>
   </div>
-  <div class="overflow-auto max-h-[70vh]">
-    <table class="w-full text-sm border">
-      <thead class="bg-amber-700 text-white sticky top-0">
-        <tr id="thead"></tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
+  <div id="profileContainer" class="overflow-auto max-h-[70vh]"></div>
 </div>
 
 <!-- INFOGRAFIS -->
@@ -76,7 +70,6 @@
 </div>
 
 <script>
-
 /* ================= USER LOGIN ================= */
 const USERS = {
   ekonomi:{pass:"eko123",kom:"Komisariat Ekonomi"},
@@ -85,10 +78,7 @@ const USERS = {
   cabang:{pass:"admin123",kom:"ALL"}
 };
 
-let role="";
-let rows=[];
-let headers=[];
-let headerMap={};
+let role="", rows=[], headers=[];
 let chartA, chartB;
 
 /* ================= LOGIN ================= */
@@ -118,16 +108,9 @@ const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRk
 async function loadData(){
   const response = await fetch(sheetURL);
   const text = await response.text();
-
   const parsed = parseCSV(text);
   headers = parsed.shift();
   rows = parsed;
-
-  headers.forEach((h,i)=>{
-    headerMap[h.trim()] = i;
-  });
-
-  renderHead();
   render();
   buildCharts();
 }
@@ -136,27 +119,14 @@ async function loadData(){
 function parseCSV(text){
   const rows = [];
   const lines = text.split("\n");
-
   for(let line of lines){
-    if(!line.trim()) continue;
-
     const result = [];
-    let current = '';
-    let insideQuotes = false;
-
+    let current = '', insideQuotes = false;
     for(let i=0;i<line.length;i++){
       const char = line[i];
-
-      if(char === '"'){
-        insideQuotes = !insideQuotes;
-      } 
-      else if(char === ',' && !insideQuotes){
-        result.push(current);
-        current = '';
-      } 
-      else{
-        current += char;
-      }
+      if(char === '"') insideQuotes = !insideQuotes;
+      else if(char === ',' && !insideQuotes){ result.push(current); current=''; }
+      else current += char;
     }
     result.push(current);
     rows.push(result);
@@ -164,43 +134,55 @@ function parseCSV(text){
   return rows;
 }
 
-/* ================= KOLOM YANG DIHILANGKAN ================= */
-const hiddenColumns = [
-  "Submission ID",
-  "Respondent ID",
-  "Submitted at",
-  "Pass Photo"
-];
+/* ================= HIDDEN COLUMNS ================= */
+function isHiddenColumn(header){
+  const h = header.toLowerCase().trim();
+  return (
+    h.includes("submission") ||
+    h.includes("respondent") ||
+    h.includes("submitted") ||
+    h.includes("pass photo") ||
+    h.includes("passport") ||
+    h.includes("photo")
+  );
+}
 
 /* ================= FILTER ================= */
 function filterRows(){
-  let f=document.getElementById("search").value.toLowerCase();
-
+  let f = document.getElementById("search").value.toLowerCase();
   return rows.filter(r=>{
-    const komis = r[ headerMap["Komisariat"] ];
-    if(role!=="ALL" && komis !== role) return false;
+    const komis = r[headers.findIndex(h=>h.toLowerCase().includes("komisariat"))];
+    if(role !== "ALL" && komis !== role) return false;
     return r.join(" ").toLowerCase().includes(f);
   });
 }
 
-/* ================= TABLE ================= */
-function renderHead(){
-  const filteredHeaders = headers.filter(h => !hiddenColumns.includes(h));
-  document.getElementById("thead").innerHTML =
-    filteredHeaders.map(x=>`<th class="p-2 border">${x}</th>`).join("");
+/* ================= RENDER PROFIL ================= */
+function render(){
+  const container = document.getElementById("profileContainer");
+  const visibleIndexes = headers.map((h,i)=>isHiddenColumn(h)?null:i).filter(i=>i!==null);
+  const filtered = filterRows();
+
+  container.innerHTML = filtered.map(r=>{
+    return `<div class="profile-card">
+      ${visibleIndexes.map(i=>{
+        return `<p><strong>${headers[i]}:</strong> ${r[i]}</p>`;
+      }).join("")}
+    </div>`;
+  }).join("");
 }
 
-function render(){
-  const d = filterRows();
-  const visibleIndexes = headers
-    .map((h,i)=> hiddenColumns.includes(h) ? null : i)
-    .filter(i=>i!==null);
-
-  document.getElementById("tbody").innerHTML = d.map(r=>`
-    <tr>
-      ${visibleIndexes.map(i=>`<td class="border p-1">${r[i]||""}</td>`).join("")}
-    </tr>
-  `).join("");
+/* ================= DOWNLOAD CSV ================= */
+function downloadCSV(){
+  const visibleIndexes = headers.map((h,i)=>isHiddenColumn(h)?null:i).filter(i=>i!==null);
+  const filteredHeaders = headers.filter((h,i)=>visibleIndexes.includes(i));
+  const filteredRows = filterRows().map(r=>visibleIndexes.map(i=>r[i]));
+  const csv=[filteredHeaders.join(","), ...filteredRows.map(r=>r.join(","))].join("\n");
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "data_"+role+".csv";
+  a.click();
 }
 
 /* ================= TABS ================= */
@@ -211,67 +193,31 @@ function showTab(id,btn){
   btn.classList.add("active");
 }
 
-/* ================= DOWNLOAD ================= */
-function downloadCSV(){
-  const d = filterRows();
-  const visibleIndexes = headers
-    .map((h,i)=> hiddenColumns.includes(h) ? null : i)
-    .filter(i=>i!==null);
-
-  const filteredHeaders = headers.filter(h => !hiddenColumns.includes(h));
-
-  let csv = [
-    filteredHeaders.join(","),
-    ...d.map(r=>visibleIndexes.map(i=>r[i]).join(","))
-  ].join("\n");
-
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="data_"+role+".csv";
-  a.click();
-}
-
 /* ================= CHART ================= */
 function buildCharts(){
-
-  let komis={}, kampus={};
-
+  const komis={}, kampus={};
   rows.forEach(r=>{
-    const komisariat = r[ headerMap["Komisariat"] ];
-    const perguruan  = r[ headerMap["Perguruan Tinggi"] ];
-
-    if(komisariat){
-      komis[komisariat]=(komis[komisariat]||0)+1;
-    }
-
-    if(perguruan){
-      kampus[perguruan]=(kampus[perguruan]||0)+1;
-    }
+    const komisKey = r[headers.findIndex(h=>h.toLowerCase().includes("komisariat"))];
+    const kampusKey = r[headers.findIndex(h=>h.toLowerCase().includes("perguruan"))];
+    if(komisKey) komis[komisKey]=(komis[komisKey]||0)+1;
+    if(kampusKey) kampus[kampusKey]=(kampus[kampusKey]||0)+1;
   });
 
   if(chartA) chartA.destroy();
   if(chartB) chartB.destroy();
 
-  chartA=new Chart(document.getElementById("chart1"),{
+  chartA = new Chart(document.getElementById("chart1"),{
     type:"bar",
-    data:{
-      labels:Object.keys(komis),
-      datasets:[{data:Object.values(komis)}]
-    },
-    options:{indexAxis:"y",plugins:{legend:{display:false}}}
+    data:{labels:Object.keys(komis), datasets:[{data:Object.values(komis)}]},
+    options:{indexAxis:"y", plugins:{legend:{display:false}}}
   });
 
-  chartB=new Chart(document.getElementById("chart2"),{
+  chartB = new Chart(document.getElementById("chart2"),{
     type:"bar",
-    data:{
-      labels:Object.keys(kampus),
-      datasets:[{data:Object.values(kampus)}]
-    },
-    options:{indexAxis:"y",plugins:{legend:{display:false}}}
+    data:{labels:Object.keys(kampus), datasets:[{data:Object.values(kampus)}]},
+    options:{indexAxis:"y", plugins:{legend:{display:false}}}
   });
 }
-
 </script>
 </body>
 </html>
