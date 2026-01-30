@@ -121,8 +121,12 @@ async function loadData(){
   const response = await fetch(sheetURL);
   const text = await response.text();
   const parsed = parseCSV(text);
-  headers = parsed.shift().filter(h=>!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h));
-  rows = parsed.map(r=>r.filter((_,i)=>!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(parsed[0]?.[i])));
+
+  // Filter kolom yang dihapus
+  const excludeCols = ["Submission ID","Respondent ID","Submitted At","Pass Photo"];
+  headers = parsed[0].filter(h=>!excludeCols.includes(h));
+  rows = parsed.slice(1).map(r=>r.filter((_,i)=>!excludeCols.includes(parsed[0][i])));
+
   renderHead();
   render();
   buildCharts();
@@ -148,9 +152,9 @@ function parseCSV(text){
 
 /* ================= FILTER ================= */
 function filterRows(){
-  let f=document.getElementById("search").value.toLowerCase();
+  const f = document.getElementById("search").value.toLowerCase();
   return rows.filter(r=>{
-    const komis=r[headers.indexOf("Komisariat")]; 
+    const komis = r[headers.indexOf("Komisariat")];
     if(role!=="ALL" && komis!==role) return false;
     return r.join(" ").toLowerCase().includes(f);
   });
