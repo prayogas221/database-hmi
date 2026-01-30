@@ -10,18 +10,23 @@
 body {
     font-family: 'Poppins', sans-serif;
     margin:0; padding:0;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
 }
-input, select, button, textarea {
+input, button, textarea {
     font-family: 'Poppins', sans-serif;
 }
 .hidden-section {
     display: none;
-    transition: all 0.5s ease;
+}
+#loginPage {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 #loginBar {
     max-width: 400px;
-    margin: 50px auto;
+    width: 90%;
     padding: 2rem;
     background: linear-gradient(135deg,#2d5016 0%,#ffffff 100%);
     border-radius: 20px;
@@ -30,74 +35,87 @@ input, select, button, textarea {
 #loginBar h2 {
     text-align: center;
     font-size: 1.75rem;
-    font-weight: 700;
-    margin-bottom: 1.5rem;
+    font-weight:700;
+    margin-bottom:1.5rem;
     color:#2d5016;
 }
 input[type="text"], input[type="password"] {
     width: 100%;
-    padding: 0.75rem;
-    margin-bottom: 1rem;
-    border-radius: 12px;
-    border: 2px solid #ccc;
-    transition: border-color 0.3s;
+    padding:0.75rem;
+    margin-bottom:1rem;
+    border-radius:12px;
+    border:2px solid #ccc;
+    transition:border-color 0.3s;
 }
 input[type="text"]:focus, input[type="password"]:focus {
-    border-color: #2d5016;
-    outline: none;
+    border-color:#2d5016;
+    outline:none;
 }
 .show-pass-btn {
-    position: absolute;
-    right: 15px;
-    top: 45%;
-    cursor: pointer;
-    color: #2d5016;
+    position:absolute;
+    right:15px;
+    top:45%;
+    cursor:pointer;
+    color:#2d5016;
 }
+button.login-btn {
+    width:100%;
+    padding:0.75rem;
+    border:none;
+    border-radius:12px;
+    font-weight:600;
+    color:white;
+    background:#2d5016;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+button.login-btn:hover {
+    transform:translateY(-2px);
+    box-shadow:0 8px 15px rgba(0,0,0,0.2);
+}
+
+/* MAIN PAGE */
 #mainContent {
-    max-width: 1200px;
-    margin: 2rem auto;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem;
-    justify-content: center;
+    display:none;
+    max-width:1200px;
+    margin:2rem auto;
+    padding:0 1rem;
 }
 .table-container {
-    flex: 1 1 600px;
-    overflow-x: auto;
+    overflow-x:auto;
+    margin-bottom:1rem;
 }
 table {
-    border-collapse: collapse;
-    width: 100%;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    border-collapse:collapse;
+    width:100%;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,0.1);
 }
 th, td {
-    padding: 0.75rem 1rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    font-size: 0.95rem;
+    padding:0.75rem 1rem;
+    text-align:left;
+    border-bottom:1px solid #ddd;
+    font-size:0.95rem;
 }
 th {
     background: linear-gradient(135deg,#2d5016 0%,#d4af37 100%);
-    color: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    color:white;
+    position:sticky;
+    top:0;
 }
-tr:hover { background-color: #f1f5f9; }
+tr:hover { background-color:#f1f5f9; }
 #addMemberBtn {
-    padding: 1rem 2rem;
-    border-radius: 20px;
+    padding:1rem 2rem;
+    border-radius:20px;
     background: linear-gradient(135deg,#2d5016 0%,#d4af37 100%);
     color:white;
     font-weight:600;
     cursor:pointer;
-    transition: all 0.3s;
+    transition:all 0.3s;
 }
-#addMemberBtn:hover { transform: translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
+#addMemberBtn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
 #tallyFormContainer {
-    flex: 1 1 350px;
     background:white;
     border-radius:20px;
     padding:1rem;
@@ -105,9 +123,10 @@ tr:hover { background-color: #f1f5f9; }
     max-height:0;
     overflow:hidden;
     transition:max-height 0.5s ease, padding 0.5s ease;
+    margin-top:1rem;
 }
 #tallyFormContainer.show {
-    max-height: 1200px;
+    max-height:1200px;
     padding:1rem;
 }
 #tallyFormContainer iframe {
@@ -129,7 +148,7 @@ tr:hover { background-color: #f1f5f9; }
     cursor:pointer;
     transition:all 0.3s;
 }
-.logout-btn { background:#e74c3c; color:white; }
+.logout-btn { background:#e74c3c; color:white;}
 .logout-btn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
 .back-btn { background:#2d5016; color:white;}
 .back-btn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
@@ -137,22 +156,23 @@ tr:hover { background-color: #f1f5f9; }
 </head>
 <body>
 
-<!-- LOGIN BAR -->
-<div id="loginBar">
-    <h2>Login Admin</h2>
-    <div class="relative">
-        <input type="text" id="username" placeholder="Username">
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+    <div id="loginBar">
+        <h2>Login Admin</h2>
+        <div class="relative">
+            <input type="text" id="username" placeholder="Username">
+        </div>
+        <div class="relative">
+            <input type="password" id="password" placeholder="Password">
+            <span class="show-pass-btn" onclick="togglePassword()">👁️</span>
+        </div>
+        <button class="login-btn" id="loginBtn">Login</button>
     </div>
-    <div class="relative">
-        <input type="password" id="password" placeholder="Password">
-        <span class="show-pass-btn" onclick="togglePassword()">👁️</span>
-    </div>
-    <button id="loginBtn" style="width:100%; background:#2d5016; color:white; padding:0.75rem; border-radius:12px; font-weight:600; cursor:pointer;">Login</button>
 </div>
 
 <!-- MAIN CONTENT -->
-<div id="mainContent" class="hidden-section">
-    <!-- Tabel Anggota -->
+<div id="mainContent">
     <div class="table-container">
         <table id="membersTable">
             <thead>
@@ -202,8 +222,8 @@ document.getElementById("loginBtn").addEventListener("click", ()=>{
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
     if(user===validUsername && pass===validPassword){
-        document.getElementById("loginBar").classList.add("hidden");
-        document.getElementById("mainContent").classList.remove("hidden-section");
+        document.getElementById("loginPage").style.display="none";
+        document.getElementById("mainContent").style.display="block";
         fetchAndRenderCSV();
     } else {
         alert("Username atau password salah!");
@@ -212,10 +232,11 @@ document.getElementById("loginBtn").addEventListener("click", ()=>{
 
 // LOGOUT
 function logout(){
-    document.getElementById("mainContent").classList.add("hidden-section");
-    document.getElementById("loginBar").classList.remove("hidden");
+    document.getElementById("mainContent").style.display="none";
+    document.getElementById("loginPage").style.display="flex";
     document.getElementById("username").value="";
     document.getElementById("password").value="";
+    hideForm();
 }
 
 // SHOW/HIDE FORM
