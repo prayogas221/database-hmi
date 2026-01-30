@@ -3,35 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DATABASE HMI MIMIKA</title>
+<title>DATABASE HMI MIMIKA - PRO</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.hidden{display:none;}
-.tabBtn{padding:8px 16px;border-radius:999px;background:#e5e7eb;cursor:pointer;transition:all .3s;}
-.tabBtn.active{background:#166534;color:white;}
-.profile-card{
-  border-radius:15px;
-  background:#f7f7f7;
-  padding:15px;
-  margin-bottom:10px;
-  box-shadow:0 4px 6px rgba(0,0,0,0.1);
+body { font-family: 'Inter', sans-serif; }
+.hidden { display: none; }
+.tabBtn {
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.3s;
 }
-input, button{transition:all .2s;}
-button:hover{opacity:.9;}
+.tabBtn.active { background:#166534; color:white; }
+.tabBtn:hover { transform: scale(1.05); }
+.table-container { overflow-x:auto; }
+table { border-collapse: collapse; width:100%; }
+th, td { padding: 8px; border: 1px solid #ddd; }
+th { background-color:#166534; color:white; cursor:pointer; }
+tr:hover { background-color:#f1f1f1; }
+.card {
+  background: #fefefe; 
+  padding:15px; 
+  border-radius:15px; 
+  box-shadow:0 3px 10px rgba(0,0,0,0.1); 
+  margin-bottom:15px; 
+  transition:0.3s;
+}
+.card:hover { transform: scale(1.02); }
 </style>
 </head>
 
-<body class="bg-slate-100 min-h-screen p-4 font-sans">
+<body class="bg-slate-100 min-h-screen p-4">
 
 <!-- ================= LOGIN ================= -->
-<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20 border-l-8 border-green-700">
+<div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20">
   <h2 class="text-2xl font-bold mb-4 text-center text-green-800">Login Database HMI Mimika</h2>
-  <input id="username" placeholder="Username" class="border p-2 w-full mb-3 rounded focus:ring-2 focus:ring-green-500">
-  <input id="password" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded focus:ring-2 focus:ring-green-500">
-  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded font-semibold">Masuk</button>
+  <input id="username" placeholder="Username" class="border p-2 w-full mb-3 rounded">
+  <input id="password" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
+  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded hover:bg-green-800 transition">Masuk</button>
   <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Username / Password salah</p>
 </div>
 
@@ -39,9 +52,9 @@ button:hover{opacity:.9;}
 <div id="app" class="hidden max-w-7xl mx-auto">
 
 <header class="bg-gradient-to-r from-green-800 to-yellow-500 text-white text-center p-5 rounded-3xl shadow mb-6">
-  <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA</h1>
+  <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA - PRO</h1>
   <p id="roleText" class="mt-1 text-sm"></p>
-  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded font-semibold">Logout</button>
+  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded hover:bg-green-100 transition">Logout</button>
 </header>
 
 <div class="flex gap-3 mb-6 justify-center flex-wrap">
@@ -53,10 +66,10 @@ button:hover{opacity:.9;}
 <!-- PROFIL -->
 <div id="profil" class="tabPage bg-white p-5 rounded-xl shadow">
   <div class="flex flex-wrap gap-3 justify-between mb-3">
-    <input id="search" oninput="render()" placeholder="Cari nama / NIK" class="border p-2 rounded w-full md:w-1/2 focus:ring-2 focus:ring-green-500">
-    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold">Download CSV</button>
+    <input id="search" oninput="render()" placeholder="Cari nama / NIK / Komisariat" class="border p-2 rounded w-full md:w-1/2">
+    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Download CSV</button>
   </div>
-  <div id="profileContainer" class="overflow-auto max-h-[70vh]"></div>
+  <div id="tableView" class="table-container max-h-[70vh] overflow-auto"></div>
 </div>
 
 <!-- INFOGRAFIS -->
@@ -86,8 +99,7 @@ const USERS = {
   cabang:{pass:"admin123",kom:"ALL"}
 };
 
-let role="", rows=[], headers=[];
-let chartA, chartB;
+let role="", rows=[], headers=[], chartA, chartB;
 
 /* ================= LOGIN ================= */
 function login(){
@@ -105,17 +117,16 @@ function login(){
   }
 }
 
-function logout(){
-  location.reload();
-}
+function logout(){ location.reload(); }
 
 /* ================= SPREADSHEET ================= */
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
-/* ================= LOAD DATA ================= */
+/* ================= PARSE CSV ================= */
 async function loadData(){
   const response = await fetch(sheetURL);
   const text = await response.text();
+
   const parsed = parseCSV(text);
   headers = parsed.shift();
   rows = parsed;
@@ -123,65 +134,48 @@ async function loadData(){
   buildCharts();
 }
 
-/* ================= PARSE CSV ================= */
 function parseCSV(text){
-  const rows = [];
+  const result = [];
   const lines = text.split("\n");
   for(let line of lines){
-    const result = [];
-    let current = '', insideQuotes = false;
+    const row = [];
+    let current="", inQuotes=false;
     for(let i=0;i<line.length;i++){
-      const char = line[i];
-      if(char === '"') insideQuotes = !insideQuotes;
-      else if(char === ',' && !insideQuotes){ result.push(current); current=''; }
-      else current += char;
+      const c=line[i];
+      if(c=='"'){ inQuotes=!inQuotes; }
+      else if(c==',' && !inQuotes){ row.push(current); current=""; }
+      else{ current+=c; }
     }
-    result.push(current);
-    rows.push(result);
+    row.push(current);
+    result.push(row);
   }
-  return rows;
+  return result;
 }
 
-/* ================= HIDDEN COLUMNS ================= */
-function isHiddenColumn(header){
-  const h = header.toLowerCase().trim();
-  return /submission|respondent|submitted|pass|photo|passport/.test(h);
-}
-
-/* ================= FILTER ================= */
+/* ================= RENDER PROFIL ================= */
 function filterRows(){
-  let f = document.getElementById("search").value.toLowerCase();
+  let f=document.getElementById("search").value.toLowerCase();
   return rows.filter(r=>{
-    const komis = r[headers.findIndex(h=>h.toLowerCase().includes("komisariat"))];
-    if(role !== "ALL" && komis !== role) return false;
+    let komis=r[13]; 
+    if(role!=="ALL" && komis!==role) return false;
     return r.join(" ").toLowerCase().includes(f);
   });
 }
 
-/* ================= RENDER PROFIL ================= */
 function render(){
-  const container = document.getElementById("profileContainer");
-  const visibleIndexes = headers.map((h,i)=>isHiddenColumn(h)?null:i).filter(i=>i!==null);
-  const filtered = filterRows();
+  const data = filterRows();
+  const tableDiv = document.getElementById("tableView");
+  tableDiv.innerHTML = "";
 
-  container.innerHTML = filtered.map(r=>{
-    return `<div class="profile-card">
-      ${visibleIndexes.map(i=>`<p><strong>${headers[i]}:</strong> ${r[i]}</p>`).join("")}
-    </div>`;
-  }).join("");
-}
-
-/* ================= DOWNLOAD CSV ================= */
-function downloadCSV(){
-  const visibleIndexes = headers.map((h,i)=>isHiddenColumn(h)?null:i).filter(i=>i!==null);
-  const filteredHeaders = headers.filter((h,i)=>visibleIndexes.includes(i));
-  const filteredRows = filterRows().map(r=>visibleIndexes.map(i=>r[i]));
-  const csv=[filteredHeaders.join(","), ...filteredRows.map(r=>r.join(","))].join("\n");
-  const blob = new Blob([csv],{type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "data_"+role+".csv";
-  a.click();
+  data.forEach(r=>{
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = headers.map((h,i)=>{
+      if(["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h)) return "";
+      return `<p><strong>${h}:</strong> ${r[i] || "-"}</p>`;
+    }).join("");
+    tableDiv.appendChild(card);
+  });
 }
 
 /* ================= TABS ================= */
@@ -192,31 +186,43 @@ function showTab(id,btn){
   btn.classList.add("active");
 }
 
+/* ================= DOWNLOAD CSV ================= */
+function downloadCSV(){
+  const data = filterRows().map(r=>{
+    return headers.map((h,i)=>["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h)?"":r[i]);
+  });
+  const csv = [headers.filter(h=>!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h)).join(","), ...data.map(r=>r.join(","))].join("\n");
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data_"+role+".csv";
+  a.click();
+}
+
 /* ================= CHART ================= */
 function buildCharts(){
-  const komis={}, kampus={};
+  let komis={}, kampus={};
   rows.forEach(r=>{
-    const komisKey = r[headers.findIndex(h=>h.toLowerCase().includes("komisariat"))];
-    const kampusKey = r[headers.findIndex(h=>h.toLowerCase().includes("perguruan"))];
-    if(komisKey) komis[komisKey]=(komis[komisKey]||0)+1;
-    if(kampusKey) kampus[kampusKey]=(kampus[kampusKey]||0)+1;
+    komis[r[13]]=(komis[r[13]]||0)+1;
+    kampus[r[12]]=(kampus[r[12]]||0)+1;
   });
 
   if(chartA) chartA.destroy();
   if(chartB) chartB.destroy();
 
-  chartA = new Chart(document.getElementById("chart1"),{
+  chartA=new Chart(document.getElementById("chart1"),{
     type:"bar",
-    data:{labels:Object.keys(komis), datasets:[{data:Object.values(komis)}]},
-    options:{indexAxis:"y", plugins:{legend:{display:false}}}
+    data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}}}
   });
 
-  chartB = new Chart(document.getElementById("chart2"),{
+  chartB=new Chart(document.getElementById("chart2"),{
     type:"bar",
-    data:{labels:Object.keys(kampus), datasets:[{data:Object.values(kampus)}]},
-    options:{indexAxis:"y", plugins:{legend:{display:false}}}
+    data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}}}
   });
 }
+
 </script>
 </body>
 </html>
