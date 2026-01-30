@@ -1,53 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DATABASE HMI MIMIKA - PRO</title>
+<title>Database HMI Mimika</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body { font-family: 'Inter', sans-serif; }
-.hidden { display: none; }
-.tabBtn {
-  padding: 10px 20px;
-  border-radius: 999px;
-  background: #e5e7eb;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-.tabBtn.active { background:#166534; color:white; }
-.tabBtn:hover { transform: scale(1.05); }
-table { border-collapse: collapse; width:100%; margin-top:10px; }
-th, td { padding: 8px; border: 1px solid #ddd; }
-th { background-color:#166534; color:white; cursor:pointer; }
-tr:hover { background-color:#f1f1f1; }
-input, button { outline:none; }
+body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%); min-height:100vh; margin:0; padding:0;}
+.hidden {display:none;}
+.tabBtn {padding:8px 16px;border-radius:999px;background:#e5e7eb;cursor:pointer;}
+.tabBtn.active {background:#166534;color:white;}
+table {width:100%;border-collapse:collapse;}
+th,td {border:1px solid #ddd;padding:8px;}
+thead {background:#166534;color:white;position:sticky;top:0;}
+tr:hover {background:#f1f1f1;}
+button {cursor:pointer;}
 </style>
 </head>
+<body class="p-4">
 
-<body class="bg-slate-100 min-h-screen p-4">
-
-<!-- ================= LOGIN ================= -->
+<!-- LOGIN -->
 <div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20">
   <h2 class="text-2xl font-bold mb-4 text-center text-green-800">Login Database HMI Mimika</h2>
   <input id="username" placeholder="Username" class="border p-2 w-full mb-3 rounded">
   <input id="password" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
-  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded hover:bg-green-800 transition">Masuk</button>
+  <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded">Masuk</button>
   <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Username / Password salah</p>
 </div>
 
-<!-- ================= APP ================= -->
+<!-- APP -->
 <div id="app" class="hidden max-w-7xl mx-auto">
 
 <header class="bg-gradient-to-r from-green-800 to-yellow-500 text-white text-center p-5 rounded-3xl shadow mb-6">
-  <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA - PRO</h1>
+  <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA</h1>
   <p id="roleText" class="mt-1 text-sm"></p>
-  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded hover:bg-green-100 transition">Logout</button>
+  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded">Logout</button>
 </header>
 
+<!-- Tabs -->
 <div class="flex gap-3 mb-6 justify-center flex-wrap">
   <button class="tabBtn active" onclick="showTab('profil',this)">Profil</button>
   <button class="tabBtn" onclick="showTab('info',this)">Infografis</button>
@@ -57,11 +50,11 @@ input, button { outline:none; }
 <!-- PROFIL -->
 <div id="profil" class="tabPage bg-white p-5 rounded-xl shadow">
   <div class="flex flex-wrap gap-3 justify-between mb-3">
-    <input id="search" oninput="render()" placeholder="Cari nama / NIK / Komisariat" class="border p-2 rounded w-full md:w-1/2">
-    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">Download CSV</button>
+    <input id="search" oninput="render()" placeholder="Cari nama / NIK / komisariat" class="border p-2 rounded w-full md:w-1/2">
+    <button onclick="downloadCSV()" class="bg-blue-600 text-white px-4 py-2 rounded">Download CSV</button>
   </div>
   <div class="overflow-auto max-h-[70vh]">
-    <table class="text-sm w-full">
+    <table>
       <thead id="thead"></thead>
       <tbody id="tbody"></tbody>
     </table>
@@ -79,15 +72,14 @@ input, button { outline:none; }
 
 <!-- TAMBAH -->
 <div id="tambah" class="tabPage hidden bg-white p-5 rounded-xl shadow">
-  <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-  class="w-full min-h-[650px] border-0"></iframe>
+  <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" class="w-full min-h-[650px] border-0"></iframe>
 </div>
 
 <footer class="text-center mt-8 text-gray-500">IT Nesacip 2025</footer>
 </div>
 
 <script>
-/* ================= USER LOGIN ================= */
+/* USERS LOGIN */
 const USERS = {
   ekonomi:{pass:"eko123",kom:"Komisariat Ekonomi"},
   insan:{pass:"insan123",kom:"Komisariat Insan Cita"},
@@ -95,8 +87,10 @@ const USERS = {
   cabang:{pass:"admin123",kom:"ALL"}
 };
 
-let role="", rows=[], headers=[], chartA, chartB;
+let role="", rows=[], headers=[];
+let chartA, chartB;
 
+/* LOGIN FUNCTION */
 function login(){
   const u = document.getElementById("username").value.trim().toLowerCase();
   const p = document.getElementById("password").value.trim();
@@ -112,47 +106,66 @@ function login(){
   }
 }
 
-function logout(){ location.reload(); }
+function logout(){
+  location.reload();
+}
 
-/* ================= SPREADSHEET ================= */
+/* SPREADSHEET CSV */
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
+/* LOAD DATA */
 async function loadData(){
   const response = await fetch(sheetURL);
   const text = await response.text();
   const parsed = parseCSV(text);
 
-  // Filter kolom yang dihapus
-  const excludeCols = ["Submission ID","Respondent ID","Submitted At","Pass Photo"];
-  headers = parsed[0].filter(h=>!excludeCols.includes(h));
-  rows = parsed.slice(1).map(r=>r.filter((_,i)=>!excludeCols.includes(parsed[0][i])));
+  // Filter header & data
+  headers = parsed.shift().filter(h => !["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(h));
+  rows = parsed.map(r => {
+    const newRow = [];
+    parsed[0]?.forEach((h,i)=> {
+      if(!["Submission ID","Respondent ID","Submitted At","Pass Photo"].includes(parsed[0][i])){
+        newRow.push(r[i]);
+      }
+    });
+    return newRow;
+  });
 
   renderHead();
   render();
   buildCharts();
 }
 
+/* PARSE CSV */
 function parseCSV(text){
-  const result = [];
+  const rows = [];
   const lines = text.split("\n");
+
   for(let line of lines){
-    const row = [];
-    let current="", inQuotes=false;
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+
     for(let i=0;i<line.length;i++){
-      const c=line[i];
-      if(c=='"'){ inQuotes=!inQuotes; }
-      else if(c==',' && !inQuotes){ row.push(current); current=""; }
-      else{ current+=c; }
+      const char = line[i];
+      if(char === '"' ){
+        insideQuotes = !insideQuotes;
+      } else if(char === ',' && !insideQuotes){
+        result.push(current);
+        current = '';
+      } else{
+        current += char;
+      }
     }
-    row.push(current);
-    result.push(row);
+    result.push(current);
+    rows.push(result);
   }
-  return result;
+  return rows;
 }
 
-/* ================= FILTER ================= */
+/* FILTER ROWS */
 function filterRows(){
-  const f = document.getElementById("search").value.toLowerCase();
+  let f=document.getElementById("search").value.toLowerCase();
   return rows.filter(r=>{
     const komis = r[headers.indexOf("Komisariat")];
     if(role!=="ALL" && komis!==role) return false;
@@ -160,17 +173,17 @@ function filterRows(){
   });
 }
 
-/* ================= TABLE ================= */
+/* TABLE RENDER */
 function renderHead(){
-  document.getElementById("thead").innerHTML = "<tr>"+headers.map(h=>`<th>${h}</th>`).join("")+"</tr>";
+  document.getElementById("thead").innerHTML = "<tr>" + headers.map(h=>`<th>${h}</th>`).join("") + "</tr>";
 }
 
 function render(){
-  const data = filterRows();
-  document.getElementById("tbody").innerHTML = data.map(r=>"<tr>"+r.map(c=>`<td>${c || "-"}</td>`).join("")+"</tr>").join("");
+  const d=filterRows();
+  document.getElementById("tbody").innerHTML=d.map(r=>"<tr>"+r.map(c=>`<td>${c}</td>`).join("")+"</tr>").join("");
 }
 
-/* ================= TABS ================= */
+/* TABS */
 function showTab(id,btn){
   document.querySelectorAll(".tabPage").forEach(x=>x.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
@@ -178,30 +191,43 @@ function showTab(id,btn){
   btn.classList.add("active");
 }
 
-/* ================= DOWNLOAD CSV ================= */
+/* DOWNLOAD CSV */
 function downloadCSV(){
-  const data = filterRows();
-  const csv = [headers.join(","), ...data.map(r=>r.join(","))].join("\n");
-  const blob = new Blob([csv],{type:"text/csv"});
-  const a = document.createElement("a");
+  let d=filterRows();
+  let csv=[headers.join(","),...d.map(r=>r.join(","))].join("\n");
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   a.download="data_"+role+".csv";
   a.click();
 }
 
-/* ================= CHART ================= */
+/* CHARTS */
 function buildCharts(){
-  const komis={}, kampus={};
+  let komis={}, kampus={};
+
   rows.forEach(r=>{
-    komis[r[headers.indexOf("Komisariat")]] = (komis[r[headers.indexOf("Komisariat")]]||0)+1;
-    kampus[r[headers.indexOf("Perguruan Tinggi")]] = (kampus[r[headers.indexOf("Perguruan Tinggi")]]||0)+1;
+    const komisKey = r[headers.indexOf("Komisariat")];
+    const kampusKey = r[headers.indexOf("Perguruan Tinggi")];
+    komis[komisKey]=(komis[komisKey]||0)+1;
+    kampus[kampusKey]=(kampus[kampusKey]||0)+1;
   });
+
   if(chartA) chartA.destroy();
   if(chartB) chartB.destroy();
-  chartA=new Chart(document.getElementById("chart1"),{type:"bar",data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});
-  chartB=new Chart(document.getElementById("chart2"),{type:"bar",data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});
+
+  chartA=new Chart(document.getElementById("chart1"),{
+    type:"bar",
+    data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}}}
+  });
+
+  chartB=new Chart(document.getElementById("chart2"),{
+    type:"bar",
+    data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}}}
+  });
 }
 </script>
-
 </body>
 </html>
