@@ -28,24 +28,36 @@ input:focus, select:focus {
     outline: none;
 }
 button {
-    background-color: #2d5016;
-    color: white;
     padding: 0.5rem 1.25rem;
     border-radius: 9999px;
     font-weight: 600;
     cursor: pointer;
 }
 button:hover {
-    background-color: #1b2f0c;
     transform: translateY(-2px);
 }
-.card {
-    background: white;
-    border-radius: 1.5rem;
-    padding: 1.5rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    margin-bottom: 1.5rem;
+
+/* LOGIN BAR */
+#loginCard {
+    background: linear-gradient(135deg, #2d5016 0%, #000000 100%);
+    color: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 400px;
+    margin: auto;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
+
+/* Add Member Tally Button */
+#addMemberButton {
+    background-color: #b5d83c; /* hijau kemeasan */
+    color: white;
+}
+#addMemberButton:hover {
+    background-color: #9cc22f;
+}
+
+/* Table */
 .table-container {
     overflow-x: auto;
 }
@@ -60,7 +72,7 @@ th, td {
     text-align: left;
 }
 th {
-    background: linear-gradient(135deg, #2d5016 0%, #ffffff 100%);
+    background: linear-gradient(135deg, #2d5016 0%, #000000 100%);
     color: #fff;
     position: sticky;
     top: 0;
@@ -68,8 +80,19 @@ th {
 tr:hover {
     background-color: #f1f5f9;
 }
-#loginCard, #addMemberCard, #tableContainer, #searchBox, #logoutContainer {
-    transition: all 0.5s ease;
+
+/* Layout main */
+#mainContent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+#tableContainer {
+    flex: 1;
+}
+#tallyFormContainer {
+    width: 400px;
+    display: none;
 }
 </style>
 </head>
@@ -79,78 +102,55 @@ tr:hover {
     <h1 class="text-3xl font-bold text-center mb-6" style="color:#2d5016;">DATABASE ANGGOTA HMI MIMIKA</h1>
 
     <!-- LOGIN CARD -->
-    <div id="loginCard" class="card max-w-md mx-auto">
+    <div id="loginCard">
         <h2 class="text-xl font-bold mb-4 text-center">Login Admin</h2>
         <input type="text" id="loginUsername" placeholder="Username" class="mb-4">
         <input type="password" id="loginPassword" placeholder="Password" class="mb-4">
         <button class="w-full" onclick="login()">Login</button>
-        <div id="loginStatus" class="text-red-600 font-semibold mt-2 text-center"></div>
+        <div id="loginStatus" class="text-red-300 font-semibold mt-2 text-center"></div>
     </div>
 
-    <!-- LOGOUT BUTTON -->
+    <!-- Logout -->
     <div id="logoutContainer" class="text-right mb-4 hidden">
-        <button onclick="logout()">Logout</button>
+        <button onclick="logout()" class="bg-black text-white px-4 py-2 rounded-full">Logout</button>
     </div>
 
-    <!-- Add Member Form -->
-    <div id="addMemberCard" class="card hidden">
-        <h2 class="font-bold mb-4 text-lg">Tambah Anggota Baru</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" id="addNik" placeholder="NIK">
-            <input type="text" id="addNama" placeholder="Nama Lengkap">
-            <input type="text" id="addTelp" placeholder="Nomor Telepon/HP">
-            <input type="text" id="addEmail" placeholder="Email">
-            <input type="text" id="addTglLahir" placeholder="Tanggal Lahir">
-            <input type="text" id="addAlamat" placeholder="Alamat">
-            <select id="addJenisKelamin">
-                <option value="">Jenis Kelamin</option>
-                <option value="Laki-Laki">Laki-Laki</option>
-                <option value="Perempuan">Perempuan</option>
-            </select>
-            <select id="addStatus">
-                <option value="">Status Anggota</option>
-                <option value="Aktif">Aktif</option>
-                <option value="Tidak Aktif">Tidak Aktif</option>
-            </select>
-            <input type="text" id="addTahun" placeholder="Masuk HMI Tahun">
-            <input type="text" id="addPT" placeholder="Perguruan Tinggi">
-            <input type="text" id="addKomisariat" placeholder="Komisariat Asal">
-            <input type="text" id="addJabatan" placeholder="Jabatan di HMI">
-            <input type="text" id="addPosisi" placeholder="Posisi Jabatan">
-        </div>
-        <div class="mt-4 flex items-center gap-3">
-            <button onclick="addMember()">Tambah Anggota</button>
-            <span id="addStatusMsg" class="text-green-700 font-semibold"></span>
-        </div>
-    </div>
+    <!-- MAIN CONTENT -->
+    <div id="mainContent" class="hidden">
 
-    <!-- Search Box -->
-    <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT..." class="mb-4 hidden">
+        <!-- Table -->
+        <div class="table-container" id="tableContainer">
+            <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat, atau PT..." class="mb-4">
+            <table id="membersTable">
+                <thead>
+                    <tr>
+                        <th>NIK</th>
+                        <th>Nama Lengkap</th>
+                        <th>Nomor Telepon/HP</th>
+                        <th>Alamat Email</th>
+                        <th>Tanggal Lahir</th>
+                        <th>Alamat</th>
+                        <th>Jenis Kelamin</th>
+                        <th>Status Anggota</th>
+                        <th>Masuk HMI Tahun</th>
+                        <th>Perguruan Tinggi</th>
+                        <th>Komisariat Asal</th>
+                        <th>Jabatan di HMI</th>
+                        <th>Posisi Jabatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>
+                </tbody>
+            </table>
+            <button id="addMemberButton" class="mt-4" onclick="showTallyForm()">+ Tambah Anggota</button>
+        </div>
 
-    <!-- Table -->
-    <div class="table-container hidden" id="tableContainer">
-        <table id="membersTable">
-            <thead>
-                <tr>
-                    <th>NIK</th>
-                    <th>Nama Lengkap</th>
-                    <th>Nomor Telepon/HP</th>
-                    <th>Alamat Email</th>
-                    <th>Tanggal Lahir</th>
-                    <th>Alamat</th>
-                    <th>Jenis Kelamin</th>
-                    <th>Status Anggota</th>
-                    <th>Masuk HMI Tahun</th>
-                    <th>Perguruan Tinggi</th>
-                    <th>Komisariat Asal</th>
-                    <th>Jabatan di HMI</th>
-                    <th>Posisi Jabatan</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>
-            </tbody>
-        </table>
+        <!-- Tally Form Embed -->
+        <div id="tallyFormContainer">
+            <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" 
+                    width="100%" height="700" frameborder="0" marginheight="0" marginwidth="0"></iframe>
+        </div>
     </div>
 </div>
 
@@ -159,13 +159,12 @@ tr:hover {
 const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 let members = [];
 
-// LOGIN FUNCTION
+// LOGIN
 function login() {
     const user = document.getElementById("loginUsername").value;
     const pass = document.getElementById("loginPassword").value;
     const status = document.getElementById("loginStatus");
 
-    // contoh multi-level admin
     const admins = [
         {username:"admin", password:"admin"},
         {username:"cabang", password:"cabang123"}
@@ -174,11 +173,9 @@ function login() {
     const valid = admins.find(a => a.username === user && a.password === pass);
 
     if(valid) {
-        document.getElementById("loginCard").classList.add("hidden");
-        document.getElementById("tableContainer").classList.remove("hidden");
-        document.getElementById("addMemberCard").classList.remove("hidden");
-        document.getElementById("searchBox").classList.remove("hidden");
+        document.getElementById("loginCard").style.display = "none";
         document.getElementById("logoutContainer").classList.remove("hidden");
+        document.getElementById("mainContent").classList.remove("hidden");
         status.textContent = "";
         fetchAndRenderCSV();
     } else {
@@ -186,12 +183,10 @@ function login() {
     }
 }
 
-// LOGOUT FUNCTION
+// LOGOUT
 function logout() {
-    document.getElementById("loginCard").classList.remove("hidden");
-    document.getElementById("tableContainer").classList.add("hidden");
-    document.getElementById("addMemberCard").classList.add("hidden");
-    document.getElementById("searchBox").classList.add("hidden");
+    document.getElementById("loginCard").style.display = "block";
+    document.getElementById("mainContent").classList.add("hidden");
     document.getElementById("logoutContainer").classList.add("hidden");
     members = [];
     document.querySelector("#membersTable tbody").innerHTML = '<tr><td colspan="13" class="text-center py-4">Memuat data...</td></tr>';
@@ -244,7 +239,7 @@ function renderTable(data) {
     });
 }
 
-// SEARCH / FILTER
+// SEARCH
 document.getElementById("searchBox").addEventListener("input", function() {
     const filter = this.value.toLowerCase();
     const rows = document.querySelectorAll("#membersTable tbody tr");
@@ -254,37 +249,10 @@ document.getElementById("searchBox").addEventListener("input", function() {
     });
 });
 
-// ADD MEMBER
-function addMember() {
-    const newMember = {
-        "Nomor Induk Kader (NIK)": document.getElementById("addNik").value,
-        "Nama Lengkap": document.getElementById("addNama").value,
-        "Nomor Telepon/HP": document.getElementById("addTelp").value,
-        "Alamat Email": document.getElementById("addEmail").value,
-        "Tanggal Lahir": document.getElementById("addTglLahir").value,
-        "Alamat": document.getElementById("addAlamat").value,
-        "Jenis Kelamin": document.getElementById("addJenisKelamin").value,
-        "Status Anggota": document.getElementById("addStatus").value,
-        "Masuk HMI Tahun": document.getElementById("addTahun").value,
-        "Perguruan Tinggi": document.getElementById("addPT").value,
-        "Komisariat Asal": document.getElementById("addKomisariat").value,
-        "Jabatan di HMI": document.getElementById("addJabatan").value,
-        "Posisi Jabatan": document.getElementById("addPosisi").value
-    };
-
-    // Tambahkan ke array lokal
-    members.push(newMember);
-    renderTable(members);
-
-    // Reset form
-    document.querySelectorAll('#addMemberCard input, #addMemberCard select').forEach(el=>el.value="");
-
-    // Notifikasi
-    const msg = document.getElementById("addStatusMsg");
-    msg.textContent = "Anggota berhasil ditambahkan!";
-    setTimeout(()=>{msg.textContent="";},3000);
-
-    // TODO: Kirim ke Google Sheet / Tally API di sini
+// SHOW TALLY FORM
+function showTallyForm() {
+    const container = document.getElementById("tallyFormContainer");
+    container.style.display = container.style.display === "block" ? "none" : "block";
 }
 </script>
 
