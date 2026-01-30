@@ -17,24 +17,25 @@
 
 <body class="bg-slate-100 min-h-screen p-4">
 
-<!-- LOGIN -->
+<!-- ================= LOGIN ================= -->
 <div id="loginBox" class="max-w-md mx-auto bg-white p-6 rounded-xl shadow mt-20">
   <h2 class="text-2xl font-bold mb-4 text-center">Login Database HMI Mimika</h2>
-  <input id="user" placeholder="Username" class="border p-2 w-full mb-3 rounded">
-  <input id="pass" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
+  <input id="username" placeholder="Username" class="border p-2 w-full mb-3 rounded">
+  <input id="password" type="password" placeholder="Password" class="border p-2 w-full mb-4 rounded">
   <button onclick="login()" class="bg-green-700 text-white w-full py-2 rounded">Masuk</button>
   <p id="loginErr" class="text-red-600 mt-2 hidden text-center">Username / Password salah</p>
 </div>
 
-<!-- APP -->
+<!-- ================= APP ================= -->
 <div id="app" class="hidden max-w-7xl mx-auto">
 
 <header class="bg-gradient-to-r from-green-800 to-yellow-500 text-white text-center p-5 rounded-3xl shadow mb-6">
   <h1 class="text-3xl font-bold">DATABASE HMI MIMIKA</h1>
   <p id="roleText" class="mt-1 text-sm"></p>
+  <button onclick="logout()" class="mt-3 bg-white text-green-800 px-4 py-1 rounded">Logout</button>
 </header>
 
-<div class="flex gap-3 mb-6 justify-center">
+<div class="flex gap-3 mb-6 justify-center flex-wrap">
   <button class="tabBtn active" onclick="showTab('profil',this)">Profil</button>
   <button class="tabBtn" onclick="showTab('info',this)">Infografis</button>
   <button class="tabBtn" onclick="showTab('tambah',this)">Tambah Anggota</button>
@@ -56,7 +57,7 @@
   </div>
 </div>
 
-<!-- INFO -->
+<!-- INFOGRAFIS -->
 <div id="info" class="tabPage hidden bg-white p-5 rounded-xl shadow">
   <h2 class="font-bold mb-2">Jumlah Anggota per Komisariat</h2>
   <canvas id="chart1"></canvas>
@@ -76,140 +77,120 @@
 
 <script>
 
-/* ================= LOGIN ================= */
-const USERS={
- ekonomi:{pass:"eko123",kom:"Komisariat Ekonomi"},
- insan:{pass:"insan123",kom:"Komisariat Insan Cita"},
- lafran:{pass:"lafran123",kom:"Komisariat Lafran Pane"},
- cabang:{pass:"admin123",kom:"ALL"}
+/* ================= USER LOGIN ================= */
+const USERS = {
+  ekonomi:{pass:"eko123",kom:"Komisariat Ekonomi"},
+  insan:{pass:"insan123",kom:"Komisariat Insan Cita"},
+  lafran:{pass:"lafran123",kom:"Komisariat Lafran Pane"},
+  cabang:{pass:"admin123",kom:"ALL"}
 };
 
 let role="", rows=[], headers=[];
-let chartA=null, chartB=null;
+let chartA, chartB;
 
+/* ================= LOGIN ================= */
 function login(){
- let u=user.value.trim();
- let p=pass.value;
+  const u = document.getElementById("username").value.trim().toLowerCase();
+  const p = document.getElementById("password").value.trim();
 
- if(USERS[u] && USERS[u].pass===p){
-   role=USERS[u].kom;
-   loginBox.classList.add("hidden");
-   app.classList.remove("hidden");
-   roleText.innerText="Akses: "+role;
-   loadData();
- } else {
-   loginErr.classList.remove("hidden");
- }
+  if(USERS[u] && USERS[u].pass === p){
+    role = USERS[u].kom;
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("roleText").innerText = "Akses: " + role;
+    loadData();
+  } else {
+    document.getElementById("loginErr").classList.remove("hidden");
+  }
 }
 
-/* ================= CSV PARSER AMAN ================= */
-function parseCSV(text){
- const rows=[];
- const regex=/(,|\n|^)(?:"([^"]*(?:""[^"]*)*)"|([^",\n]*))/g;
- let row=[];
- let match;
-
- while(match=regex.exec(text)){
-   if(match[1]==="\n"){
-     rows.push(row);
-     row=[];
-   }
-   row.push(match[2] ? match[2].replace(/""/g,'"') : match[3]);
- }
- rows.push(row);
- return rows;
+/* ================= LOGOUT ================= */
+function logout(){
+  location.reload();
 }
 
-/* ================= LOAD DATA ================= */
+/* ================= SPREADSHEET ================= */
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSaGF4w9j1HOTUJcpdBltUZ4N2hkZIqUpD6tJ4OkKkuHaYkWObiKnloTYC0rK1at5UYA16GmPUm7BNa/pub?gid=0&single=true&output=csv";
 
+/* ================= LOAD DATA ================= */
 async function loadData(){
- let t=await fetch(sheetURL).then(r=>r.text());
- let arr=parseCSV(t);
- headers=arr.shift();
- rows=arr;
- renderHead();
- render();
- buildCharts();
+  let t=await fetch(sheetURL).then(r=>r.text());
+  let arr=t.trim().split("\n").map(r=>r.split(","));
+  headers=arr.shift();
+  rows=arr;
+  renderHead();
+  render();
+  buildCharts();
 }
 
 /* ================= FILTER ================= */
 function filterRows(){
- let f=search.value.toLowerCase();
- return rows.filter(r=>{
-   let komis=r[13] || "";
-   if(role!=="ALL" && komis!==role) return false;
-   return r.join(" ").toLowerCase().includes(f);
- });
+  let f=document.getElementById("search").value.toLowerCase();
+  return rows.filter(r=>{
+    let komis=r[13];
+    if(role!=="ALL" && komis!==role) return false;
+    return r.join(" ").toLowerCase().includes(f);
+  });
 }
 
 /* ================= TABLE ================= */
 function renderHead(){
- thead.innerHTML=headers.map(x=>`<th class="p-2 border">${x}</th>`).join("");
+  document.getElementById("thead").innerHTML=headers.map(x=>`<th class="p-2 border">${x}</th>`).join("");
 }
 
 function render(){
- let d=filterRows();
-
- tbody.innerHTML=d.map(r=>{
-   return `<tr>${
-     r.map((c,i)=>{
-       if(i===14 && c){ // kolom foto
-         return `<td class="border p-1 text-center">
-           <img src="${c}" class="w-16 h-16 object-cover rounded mx-auto">
-         </td>`;
-       }
-       return `<td class="border p-1">${c||""}</td>`;
-     }).join("")
-   }</tr>`;
- }).join("");
+  let d=filterRows();
+  document.getElementById("tbody").innerHTML=d.map(r=>`<tr>${r.map(c=>`<td class="border p-1">${c}</td>`).join("")}</tr>`).join("");
 }
 
-/* ================= TAB ================= */
+/* ================= TABS ================= */
 function showTab(id,btn){
- document.querySelectorAll(".tabPage").forEach(x=>x.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
- document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"));
- btn.classList.add("active");
+  document.querySelectorAll(".tabPage").forEach(x=>x.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
 }
 
 /* ================= DOWNLOAD ================= */
 function downloadCSV(){
- let d=filterRows();
- let csv=[headers.join(","),...d.map(r=>r.join(","))].join("\n");
- let blob=new Blob([csv],{type:"text/csv"});
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="data_"+role+".csv";
- a.click();
+  let d=filterRows();
+  let csv=[headers.join(","),...d.map(r=>r.join(","))].join("\n");
+  let blob=new Blob([csv],{type:"text/csv"});
+  let a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="data_"+role+".csv";
+  a.click();
 }
 
 /* ================= CHART ================= */
 function buildCharts(){
- let komis={}, kampus={};
 
- rows.forEach(r=>{
-  if(!r[13] || !r[12]) return;
-  komis[r[13]]=(komis[r[13]]||0)+1;
-  kampus[r[12]]=(kampus[r[12]]||0)+1;
- });
+  let komis={}, kampus={};
 
- if(chartA) chartA.destroy();
- if(chartB) chartB.destroy();
+  rows.forEach(r=>{
+    komis[r[13]]=(komis[r[13]]||0)+1;
+    kampus[r[12]]=(kampus[r[12]]||0)+1;
+  });
 
- chartA=new Chart(chart1,{
-  type:"bar",
-  data:{labels:Object.keys(komis),datasets:[{data:Object.values(komis)}]},
-  options:{indexAxis:"y",plugins:{legend:{display:false}}}
- });
+  if(chartA) chartA.destroy();
+  if(chartB) chartB.destroy();
 
- chartB=new Chart(chart2,{
-  type:"bar",
-  data:{labels:Object.keys(kampus),datasets:[{data:Object.values(kampus)}]},
-  options:{indexAxis:"y",plugins:{legend:{display:false}}}
- });
+  chartA=new Chart(document.getElementById("chart1"),{
+    type:"bar",
+    data:{labels:Object.keys(komis),
+    datasets:[{data:Object.values(komis)}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}}}
+  });
+
+  chartB=new Chart(document.getElementById("chart2"),{
+    type:"bar",
+    data:{labels:Object.keys(kampus),
+    datasets:[{data:Object.values(kampus)}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}}}
+  });
 }
 
 </script>
+
 </body>
 </html>
