@@ -104,30 +104,62 @@ function login(){
   }
 }
 
-/* ================= LOGOUT ================= */
 function logout(){
   location.reload();
 }
 
-/* ================= SPREADSHEET ================= */
-const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vSaGF4w9j1HOTUJcpdBltUZ4N2hkZIqUpD6tJ4OkKkuHaYkWObiKnloTYC0rK1at5UYA16GmPUm7BNa/pub?gid=0&single=true&output=csv";
+/* ================= SPREADSHEET TERBARU ================= */
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
 /* ================= LOAD DATA ================= */
 async function loadData(){
-  let t=await fetch(sheetURL).then(r=>r.text());
-  let arr=t.trim().split("\n").map(r=>r.split(","));
-  headers=arr.shift();
-  rows=arr;
+  const response = await fetch(sheetURL);
+  const text = await response.text();
+
+  const parsed = parseCSV(text);
+  headers = parsed.shift();
+  rows = parsed;
+
   renderHead();
   render();
   buildCharts();
+}
+
+/* ================= PARSE CSV AMAN ================= */
+function parseCSV(text){
+  const rows = [];
+  const lines = text.split("\n");
+
+  for(let line of lines){
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+
+    for(let i=0;i<line.length;i++){
+      const char = line[i];
+
+      if(char === '"' ){
+        insideQuotes = !insideQuotes;
+      } 
+      else if(char === ',' && !insideQuotes){
+        result.push(current);
+        current = '';
+      } 
+      else{
+        current += char;
+      }
+    }
+    result.push(current);
+    rows.push(result);
+  }
+  return rows;
 }
 
 /* ================= FILTER ================= */
 function filterRows(){
   let f=document.getElementById("search").value.toLowerCase();
   return rows.filter(r=>{
-    let komis=r[13];
+    let komis=r[13]; // kolom komisariat
     if(role!=="ALL" && komis!==role) return false;
     return r.join(" ").toLowerCase().includes(f);
   });
@@ -140,7 +172,10 @@ function renderHead(){
 
 function render(){
   let d=filterRows();
-  document.getElementById("tbody").innerHTML=d.map(r=>`<tr>${r.map(c=>`<td class="border p-1">${c}</td>`).join("")}</tr>`).join("");
+  document.getElementById("tbody").innerHTML=d.map(r=>`
+    <tr>
+      ${r.map(c=>`<td class="border p-1">${c}</td>`).join("")}
+    </tr>`).join("");
 }
 
 /* ================= TABS ================= */
@@ -191,6 +226,5 @@ function buildCharts(){
 }
 
 </script>
-
 </body>
 </html>
