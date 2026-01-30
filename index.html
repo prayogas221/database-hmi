@@ -9,278 +9,187 @@
 <style>
 body {
     font-family: 'Poppins', sans-serif;
-    margin:0; padding:0;
-    background: linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
-input, button, textarea {
-    font-family: 'Poppins', sans-serif;
-}
-.hidden-section {
-    display: none;
-}
-#loginPage {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
-#loginBar {
-    max-width: 400px;
-    width: 90%;
-    padding: 2rem;
-    background: linear-gradient(135deg,#2d5016 0%,#ffffff 100%);
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-#loginBar h2 {
-    text-align: center;
-    font-size: 1.75rem;
-    font-weight:700;
-    margin-bottom:1.5rem;
-    color:#2d5016;
-}
-input[type="text"], input[type="password"] {
-    width: 100%;
-    padding:0.75rem;
-    margin-bottom:1rem;
-    border-radius:12px;
-    border:2px solid #ccc;
-    transition:border-color 0.3s;
-}
-input[type="text"]:focus, input[type="password"]:focus {
-    border-color:#2d5016;
-    outline:none;
-}
-.show-pass-btn {
-    position:absolute;
-    right:15px;
-    top:45%;
-    cursor:pointer;
-    color:#2d5016;
-}
-button.login-btn {
-    width:100%;
-    padding:0.75rem;
-    border:none;
-    border-radius:12px;
-    font-weight:600;
-    color:white;
-    background:#2d5016;
-    cursor:pointer;
-    transition:all 0.3s;
-}
-button.login-btn:hover {
-    transform:translateY(-2px);
-    box-shadow:0 8px 15px rgba(0,0,0,0.2);
-}
-
-/* MAIN PAGE */
-#mainContent {
-    display:none;
-    max-width:1200px;
-    margin:2rem auto;
-    padding:0 1rem;
-}
-.table-container {
-    overflow-x:auto;
-    margin-bottom:1rem;
-}
-table {
-    border-collapse:collapse;
-    width:100%;
-    border-radius:15px;
-    overflow:hidden;
-    box-shadow:0 6px 18px rgba(0,0,0,0.1);
-}
-th, td {
-    padding:0.75rem 1rem;
-    text-align:left;
-    border-bottom:1px solid #ddd;
-    font-size:0.95rem;
-}
-th {
-    background: linear-gradient(135deg,#2d5016 0%,#d4af37 100%);
-    color:white;
-    position:sticky;
-    top:0;
-}
-tr:hover { background-color:#f1f5f9; }
-#addMemberBtn {
-    padding:1rem 2rem;
-    border-radius:20px;
-    background: linear-gradient(135deg,#2d5016 0%,#d4af37 100%);
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-    transition:all 0.3s;
-}
-#addMemberBtn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
-#tallyFormContainer {
-    background:white;
-    border-radius:20px;
-    padding:1rem;
-    box-shadow:0 10px 25px rgba(0,0,0,0.1);
-    max-height:0;
-    overflow:hidden;
-    transition:max-height 0.5s ease, padding 0.5s ease;
-    margin-top:1rem;
-}
-#tallyFormContainer.show {
-    max-height:1200px;
-    padding:1rem;
-}
-#tallyFormContainer iframe {
-    width:100%;
-    height:600px;
-    border:none;
-    border-radius:15px;
-}
-.action-btns {
-    display:flex;
-    gap:0.75rem;
-    margin-top:1rem;
-}
-.action-btns button {
-    padding:0.75rem 1.5rem;
-    border-radius:15px;
-    border:none;
-    font-weight:600;
-    cursor:pointer;
-    transition:all 0.3s;
-}
-.logout-btn { background:#e74c3c; color:white;}
-.logout-btn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
-.back-btn { background:#2d5016; color:white;}
-.back-btn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
+button { cursor: pointer; transition: all 0.3s; }
+input, select, textarea { outline: none; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #2d5016; border-radius: 4px; }
 </style>
 </head>
-<body>
+<body class="h-full flex items-center justify-center">
 
 <!-- LOGIN PAGE -->
-<div id="loginPage">
-    <div id="loginBar">
-        <h2>Login Admin</h2>
-        <div class="relative">
-            <input type="text" id="username" placeholder="Username">
-        </div>
-        <div class="relative">
-            <input type="password" id="password" placeholder="Password">
-            <span class="show-pass-btn" onclick="togglePassword()">👁️</span>
-        </div>
-        <button class="login-btn" id="loginBtn">Login</button>
+<div id="loginPage" class="w-full max-w-md p-8 rounded-3xl shadow-xl bg-gradient-to-r from-green-700 via-green-800 to-black text-white">
+    <h1 class="text-3xl font-bold text-center mb-6">Login HMI Mimika</h1>
+    <div class="mb-4">
+        <label class="block mb-2 font-semibold">Username</label>
+        <input type="text" id="usernameInput" class="w-full p-3 rounded-xl text-black" placeholder="Masukkan username">
     </div>
+    <div class="mb-4 relative">
+        <label class="block mb-2 font-semibold">Password</label>
+        <input type="password" id="passwordInput" class="w-full p-3 rounded-xl text-black pr-12" placeholder="Masukkan password">
+        <button id="togglePassword" class="absolute right-3 top-3 text-sm text-green-900 font-semibold">Lihat</button>
+    </div>
+    <button id="loginBtn" class="w-full py-3 rounded-xl font-bold bg-green-600 hover:bg-green-500">Login</button>
+    <p id="loginError" class="text-red-500 mt-3 text-center hidden">Username atau password salah!</p>
 </div>
 
-<!-- MAIN CONTENT -->
-<div id="mainContent">
-    <div class="table-container">
-        <table id="membersTable">
-            <thead>
-                <tr>
-                    <th>NIK</th>
-                    <th>Nama Lengkap</th>
-                    <th>Telepon</th>
-                    <th>Email</th>
-                    <th>Tgl Lahir</th>
-                    <th>Alamat</th>
-                    <th>JK</th>
-                    <th>Status</th>
-                    <th>Tahun Masuk</th>
-                    <th>Perguruan Tinggi</th>
-                    <th>Komisariat</th>
-                    <th>Jabatan HMI</th>
-                    <th>Posisi</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <button id="addMemberBtn">➕ Tambah Anggota</button>
+<!-- MAIN PAGE -->
+<div id="mainPage" class="hidden w-full h-full p-6 overflow-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-green-800">DATA ANGGOTA HMI MIMIKA</h1>
+        <button id="logoutBtn" class="py-2 px-4 bg-red-600 text-white rounded-xl hover:bg-red-500">Logout</button>
     </div>
 
-    <!-- Tally Form -->
-    <div id="tallyFormContainer">
-        <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"></iframe>
-        <div class="action-btns">
-            <button class="back-btn" onclick="hideForm()">Kembali</button>
-            <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="flex flex-col lg:flex-row gap-6">
+
+        <!-- Tabel Anggota -->
+        <div id="tableContainer" class="flex-1 bg-white p-4 rounded-3xl shadow-lg overflow-auto">
+            <input type="text" id="searchBox" placeholder="🔍 Cari nama, NIK, komisariat..." class="w-full p-2 mb-4 border rounded-xl border-gray-300">
+            <div class="overflow-x-auto">
+                <table id="membersTable" class="w-full rounded-2xl border-collapse">
+                    <thead class="bg-green-700 text-white rounded-2xl">
+                        <tr>
+                            <th class="p-3 text-left">NIK</th>
+                            <th class="p-3 text-left">Nama Lengkap</th>
+                            <th class="p-3 text-left">HP</th>
+                            <th class="p-3 text-left">Email</th>
+                            <th class="p-3 text-left">Tanggal Lahir</th>
+                            <th class="p-3 text-left">Alamat</th>
+                            <th class="p-3 text-left">Jenis Kelamin</th>
+                            <th class="p-3 text-left">Status</th>
+                            <th class="p-3 text-left">Tahun Masuk</th>
+                            <th class="p-3 text-left">PT</th>
+                            <th class="p-3 text-left">Komisariat</th>
+                            <th class="p-3 text-left">Jabatan</th>
+                            <th class="p-3 text-left">Posisi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
+
+        <!-- Panel Tambah Anggota -->
+        <div class="w-full lg:w-96 flex flex-col gap-4">
+            <button id="toggleFormBtn" class="py-3 bg-green-700 text-white font-semibold rounded-3xl hover:bg-green-600 shadow-lg">➕ Tambah Anggota</button>
+            <iframe id="tallyForm" src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" class="w-full h-0 rounded-3xl shadow-lg transition-all overflow-hidden"></iframe>
+            <button id="closeFormBtn" class="py-3 bg-red-600 text-white font-semibold rounded-3xl hover:bg-red-500 shadow-lg hidden">❌ Kembali</button>
+        </div>
+
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-// LOGIN LOGIC
-const validUsername = "admin";
-const validPassword = "12345";
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
-function togglePassword(){
-    const pass = document.getElementById("password");
-    pass.type = pass.type==="password"?"text":"password";
-}
+// ==== LOGIN LOGIC ====
+const loginPage = document.getElementById('loginPage');
+const mainPage = document.getElementById('mainPage');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const togglePassword = document.getElementById('togglePassword');
+const usernameInput = document.getElementById('usernameInput');
+const passwordInput = document.getElementById('passwordInput');
+const loginError = document.getElementById('loginError');
 
-document.getElementById("loginBtn").addEventListener("click", ()=>{
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-    if(user===validUsername && pass===validPassword){
-        document.getElementById("loginPage").style.display="none";
-        document.getElementById("mainContent").style.display="block";
+const USER = "admin";
+const PASS = "hmi2026";
+
+togglePassword.addEventListener('click', ()=>{
+    if(passwordInput.type==="password") { passwordInput.type="text"; togglePassword.textContent="Sembunyikan"; }
+    else { passwordInput.type="password"; togglePassword.textContent="Lihat"; }
+});
+
+loginBtn.addEventListener('click', ()=>{
+    if(usernameInput.value===USER && passwordInput.value===PASS){
+        loginPage.classList.add('hidden');
+        mainPage.classList.remove('hidden');
         fetchAndRenderCSV();
     } else {
-        alert("Username atau password salah!");
+        loginError.classList.remove('hidden');
     }
 });
 
-// LOGOUT
-function logout(){
-    document.getElementById("mainContent").style.display="none";
-    document.getElementById("loginPage").style.display="flex";
-    document.getElementById("username").value="";
-    document.getElementById("password").value="";
-    hideForm();
-}
-
-// SHOW/HIDE FORM
-const tallyContainer = document.getElementById("tallyFormContainer");
-const addBtn = document.getElementById("addMemberBtn");
-addBtn.addEventListener("click", ()=>{
-    tallyContainer.classList.add("show");
-    document.querySelector(".table-container").style.display="none";
+logoutBtn.addEventListener('click', ()=>{
+    mainPage.classList.add('hidden');
+    loginPage.classList.remove('hidden');
+    usernameInput.value=""; passwordInput.value=""; loginError.classList.add('hidden');
 });
-function hideForm(){
-    tallyContainer.classList.remove("show");
-    document.querySelector(".table-container").style.display="block";
-}
 
-// CSV TABLE
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
-function fetchAndRenderCSV(){
+// ==== TALLY FORM LOGIC ====
+const toggleFormBtn = document.getElementById('toggleFormBtn');
+const closeFormBtn = document.getElementById('closeFormBtn');
+const tallyForm = document.getElementById('tallyForm');
+const tableContainer = document.getElementById('tableContainer');
+
+toggleFormBtn.addEventListener('click', ()=>{
+    tallyForm.style.height = "600px";
+    tableContainer.classList.add('hidden');
+    toggleFormBtn.classList.add('hidden');
+    closeFormBtn.classList.remove('hidden');
+});
+closeFormBtn.addEventListener('click', ()=>{
+    tallyForm.style.height = "0";
+    tableContainer.classList.remove('hidden');
+    toggleFormBtn.classList.remove('hidden');
+    closeFormBtn.classList.add('hidden');
+});
+
+// ==== TABLE LOGIC ====
+function fetchAndRenderCSV() {
     Papa.parse(csvUrl, {
-        download:true,
-        header:true,
-        skipEmptyLines:true,
-        complete:function(results){
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
             renderTable(results.data);
         }
     });
 }
 
-function renderTable(data){
+function renderTable(data) {
     const tbody = document.querySelector("#membersTable tbody");
-    tbody.innerHTML="";
-    data.forEach(member=>{
+    tbody.innerHTML = "";
+    data.forEach(member => {
         const row = document.createElement("tr");
-        const cols = ["Nomor Induk Kader (NIK)","Nama Lengkap","Nomor Telepon/HP","Alamat Email",
-                      "Tanggal Lahir","Alamat","Jenis Kelamin","Status Anggota","Masuk HMI Tahun",
-                      "Perguruan Tinggi","Komisariat Asal","Jabatan di HMI","Posisi Jabatan"];
+        const cols = [
+            "Nomor Induk Kader (NIK)",
+            "Nama Lengkap",
+            "Nomor Telepon/HP",
+            "Alamat Email",
+            "Tanggal Lahir",
+            "Alamat",
+            "Jenis Kelamin",
+            "Status Anggota",
+            "Masuk HMI Tahun",
+            "Perguruan Tinggi",
+            "Komisariat Asal",
+            "Jabatan di HMI",
+            "Posisi Jabatan"
+        ];
         cols.forEach(col=>{
             const td = document.createElement("td");
-            td.textContent = member[col]||"-";
+            td.textContent = member[col] || "-";
+            td.classList.add("p-2");
             row.appendChild(td);
         });
         tbody.appendChild(row);
     });
 }
-</script>
 
+// ==== SEARCH ====
+document.getElementById("searchBox").addEventListener("input", function(){
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#membersTable tbody tr");
+    rows.forEach(row=>{
+        row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+    });
+});
+</script>
 </body>
 </html>
