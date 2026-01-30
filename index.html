@@ -9,296 +9,257 @@
 <style>
 body {
     font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
+    margin:0; padding:0;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
-/* Login Page */
-#loginPage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #2d5016 0%, #000 100%);
+input, select, button, textarea {
+    font-family: 'Poppins', sans-serif;
 }
-.login-container {
-    background: white;
-    border-radius: 20px;
-    padding: 3rem;
-    width: 90%;
+.hidden-section {
+    display: none;
+    transition: all 0.5s ease;
+}
+#loginBar {
     max-width: 400px;
-    box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+    margin: 50px auto;
+    padding: 2rem;
+    background: linear-gradient(135deg,#2d5016 0%,#ffffff 100%);
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+#loginBar h2 {
     text-align: center;
-}
-.login-container h2 {
-    margin-bottom: 1.5rem;
-    color: #2d5016;
+    font-size: 1.75rem;
     font-weight: 700;
-}
-.input-group {
-    position: relative;
     margin-bottom: 1.5rem;
+    color:#2d5016;
 }
-.input-group input {
-    width: 100%;
-    padding: 0.75rem 2.5rem 0.75rem 1rem;
-    border-radius: 12px;
-    border: 2px solid #2d5016;
-    outline: none;
-}
-.input-group .toggle-visibility {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #2d5016;
-}
-.login-btn {
+input[type="text"], input[type="password"] {
     width: 100%;
     padding: 0.75rem;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #2d5016 0%, #d4af37 100%);
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-.login-btn:hover {
-    transform: scale(1.05);
-}
-
-/* Dashboard Page */
-#dashboardPage {
-    display: none;
-    padding: 1rem;
-}
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 1rem;
+    border-radius: 12px;
+    border: 2px solid #ccc;
+    transition: border-color 0.3s;
 }
-.dashboard-header h1 {
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #2d5016;
+    outline: none;
+}
+.show-pass-btn {
+    position: absolute;
+    right: 15px;
+    top: 45%;
+    cursor: pointer;
     color: #2d5016;
-    font-size: 1.8rem;
-    font-weight: 700;
 }
-
-/* Tabel Anggota */
+#mainContent {
+    max-width: 1200px;
+    margin: 2rem auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+}
 .table-container {
+    flex: 1 1 600px;
     overflow-x: auto;
-    border-radius: 16px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    background: white;
 }
 table {
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
 }
 th, td {
     padding: 0.75rem 1rem;
     text-align: left;
-    font-size: 0.9rem;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.95rem;
 }
 th {
-    background: linear-gradient(135deg, #2d5016 0%, #d4af37 100%);
-    color: white;
+    background: linear-gradient(135deg,#2d5016 0%,#d4af37 100%);
+    color: #fff;
     position: sticky;
     top: 0;
+    z-index: 10;
 }
-tr:hover {
-    background-color: #f1f5f9;
-}
-td {
-    border-bottom: 1px solid #eee;
-    border-right: 1px solid #eee;
-}
-td:last-child {
-    border-right: none;
-}
-
-/* Tambah Anggota Button */
+tr:hover { background-color: #f1f5f9; }
 #addMemberBtn {
-    background: linear-gradient(135deg, #2d5016 0%, #d4af37 100%);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 9999px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: transform 0.2s;
-    position: sticky;
-    top: 1rem;
+    padding: 1rem 2rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg,#2d5016 0%,#d4af37 100%);
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    transition: all 0.3s;
 }
-#addMemberBtn:hover {
-    transform: scale(1.05);
-}
-
-/* Tally Form Slide */
+#addMemberBtn:hover { transform: translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
 #tallyFormContainer {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 95%;
-    max-width: 500px;
-    height: 100%;
-    background: white;
-    box-shadow: -5px 0 20px rgba(0,0,0,0.2);
-    z-index: 50;
-    transition: right 0.4s ease-in-out;
-    padding: 1rem;
-    overflow-y: auto;
-    border-radius: 16px 0 0 16px;
+    flex: 1 1 350px;
+    background:white;
+    border-radius:20px;
+    padding:1rem;
+    box-shadow:0 10px 25px rgba(0,0,0,0.1);
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.5s ease, padding 0.5s ease;
 }
-#tallyFormContainer.active {
-    right: 0;
+#tallyFormContainer.show {
+    max-height: 1200px;
+    padding:1rem;
 }
-
-/* Responsive */
-@media (max-width: 768px) {
-    .dashboard-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    #tallyFormContainer {
-        width: 100%;
-        max-width: 100%;
-        border-radius: 0;
-    }
+#tallyFormContainer iframe {
+    width:100%;
+    height:600px;
+    border:none;
+    border-radius:15px;
 }
+.action-btns {
+    display:flex;
+    gap:0.75rem;
+    margin-top:1rem;
+}
+.action-btns button {
+    padding:0.75rem 1.5rem;
+    border-radius:15px;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+.logout-btn { background:#e74c3c; color:white; }
+.logout-btn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
+.back-btn { background:#2d5016; color:white;}
+.back-btn:hover { transform:translateY(-3px); box-shadow:0 10px 20px rgba(0,0,0,0.15);}
 </style>
 </head>
 <body>
 
-<!-- Login Page -->
-<div id="loginPage">
-    <div class="login-container">
-        <h2>LOGIN HMI MIMIKA</h2>
-        <div class="input-group">
-            <input type="text" id="usernameInput" placeholder="Username">
-            <span class="toggle-visibility" onclick="toggleVisibility('usernameInput')">👁️</span>
-        </div>
-        <div class="input-group">
-            <input type="password" id="passwordInput" placeholder="Password">
-            <span class="toggle-visibility" onclick="toggleVisibility('passwordInput')">👁️</span>
-        </div>
-        <button class="login-btn" onclick="login()">Masuk</button>
+<!-- LOGIN BAR -->
+<div id="loginBar">
+    <h2>Login Admin</h2>
+    <div class="relative">
+        <input type="text" id="username" placeholder="Username">
     </div>
+    <div class="relative">
+        <input type="password" id="password" placeholder="Password">
+        <span class="show-pass-btn" onclick="togglePassword()">👁️</span>
+    </div>
+    <button id="loginBtn" style="width:100%; background:#2d5016; color:white; padding:0.75rem; border-radius:12px; font-weight:600; cursor:pointer;">Login</button>
 </div>
 
-<!-- Dashboard Page -->
-<div id="dashboardPage">
-    <div class="dashboard-header">
-        <h1>Database Anggota HMI Mimika</h1>
-        <button id="addMemberBtn" onclick="toggleTallyForm()">➕ Tambah Anggota</button>
-    </div>
+<!-- MAIN CONTENT -->
+<div id="mainContent" class="hidden-section">
+    <!-- Tabel Anggota -->
     <div class="table-container">
         <table id="membersTable">
             <thead>
                 <tr>
                     <th>NIK</th>
                     <th>Nama Lengkap</th>
-                    <th>No. Telepon</th>
+                    <th>Telepon</th>
                     <th>Email</th>
-                    <th>Tanggal Lahir</th>
+                    <th>Tgl Lahir</th>
                     <th>Alamat</th>
-                    <th>Jenis Kelamin</th>
+                    <th>JK</th>
                     <th>Status</th>
                     <th>Tahun Masuk</th>
                     <th>Perguruan Tinggi</th>
-                    <th>Komisariat Asal</th>
-                    <th>Jabatan</th>
+                    <th>Komisariat</th>
+                    <th>Jabatan HMI</th>
                     <th>Posisi</th>
                 </tr>
             </thead>
-            <tbody>
-                <!-- Data CSV akan dimasukkan JS -->
-            </tbody>
+            <tbody></tbody>
         </table>
+        <button id="addMemberBtn">➕ Tambah Anggota</button>
     </div>
-</div>
 
-<!-- Tally Form Slide -->
-<div id="tallyFormContainer">
-    <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="100%" height="100%" frameborder="0" marginheight="0" marginwidth="0" title="Formulir Tambah Anggota"></iframe>
+    <!-- Tally Form -->
+    <div id="tallyFormContainer">
+        <iframe src="https://tally.so/embed/BzxN1Q?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"></iframe>
+        <div class="action-btns">
+            <button class="back-btn" onclick="hideForm()">Kembali</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script>
-const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
+// LOGIN LOGIC
+const validUsername = "admin";
+const validPassword = "12345";
 
-// Toggle show/hide password or username
-function toggleVisibility(id) {
-    const input = document.getElementById(id);
-    input.type = input.type === "password" || input.type === "text" && id.includes("password") ? "text" : "text";
-    if(input.type === "text" && id.includes("password")) input.type = "text";
-    else if(id.includes("password")) input.type = "password";
+function togglePassword(){
+    const pass = document.getElementById("password");
+    pass.type = pass.type==="password"?"text":"password";
 }
 
-// Simple login logic
-function login() {
-    const username = document.getElementById("usernameInput").value;
-    const password = document.getElementById("passwordInput").value;
-
-    if(username === "admin" && password === "admin123") {
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("dashboardPage").style.display = "block";
+document.getElementById("loginBtn").addEventListener("click", ()=>{
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+    if(user===validUsername && pass===validPassword){
+        document.getElementById("loginBar").classList.add("hidden");
+        document.getElementById("mainContent").classList.remove("hidden-section");
         fetchAndRenderCSV();
     } else {
-        alert("Username atau Password salah!");
+        alert("Username atau password salah!");
     }
+});
+
+// LOGOUT
+function logout(){
+    document.getElementById("mainContent").classList.add("hidden-section");
+    document.getElementById("loginBar").classList.remove("hidden");
+    document.getElementById("username").value="";
+    document.getElementById("password").value="";
 }
 
-// Tally form toggle
-function toggleTallyForm() {
-    document.getElementById("tallyFormContainer").classList.toggle("active");
+// SHOW/HIDE FORM
+const tallyContainer = document.getElementById("tallyFormContainer");
+const addBtn = document.getElementById("addMemberBtn");
+addBtn.addEventListener("click", ()=>{
+    tallyContainer.classList.add("show");
+    document.querySelector(".table-container").style.display="none";
+});
+function hideForm(){
+    tallyContainer.classList.remove("show");
+    document.querySelector(".table-container").style.display="block";
 }
 
-// Fetch CSV and render table
-function fetchAndRenderCSV() {
+// CSV TABLE
+const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
+function fetchAndRenderCSV(){
     Papa.parse(csvUrl, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            const data = results.data;
-            renderTable(data);
+        download:true,
+        header:true,
+        skipEmptyLines:true,
+        complete:function(results){
+            renderTable(results.data);
         }
     });
 }
 
-function renderTable(data) {
+function renderTable(data){
     const tbody = document.querySelector("#membersTable tbody");
-    tbody.innerHTML = "";
-    data.forEach(member => {
+    tbody.innerHTML="";
+    data.forEach(member=>{
         const row = document.createElement("tr");
-        const cols = [
-            "Nomor Induk Kader (NIK)",
-            "Nama Lengkap",
-            "Nomor Telepon/HP",
-            "Alamat Email",
-            "Tanggal Lahir",
-            "Alamat",
-            "Jenis Kelamin",
-            "Status Anggota",
-            "Masuk HMI Tahun",
-            "Perguruan Tinggi",
-            "Komisariat Asal",
-            "Jabatan di HMI",
-            "Posisi Jabatan"
-        ];
-        cols.forEach(col => {
+        const cols = ["Nomor Induk Kader (NIK)","Nama Lengkap","Nomor Telepon/HP","Alamat Email",
+                      "Tanggal Lahir","Alamat","Jenis Kelamin","Status Anggota","Masuk HMI Tahun",
+                      "Perguruan Tinggi","Komisariat Asal","Jabatan di HMI","Posisi Jabatan"];
+        cols.forEach(col=>{
             const td = document.createElement("td");
-            td.textContent = member[col] || "-";
+            td.textContent = member[col]||"-";
             row.appendChild(td);
         });
         tbody.appendChild(row);
     });
 }
 </script>
+
 </body>
 </html>
-
