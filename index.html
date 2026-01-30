@@ -85,7 +85,10 @@ const USERS = {
   cabang:{pass:"admin123",kom:"ALL"}
 };
 
-let role="", rows=[], headers=[];
+let role="";
+let rows=[];
+let headers=[];
+let headerMap={};
 let chartA, chartB;
 
 /* ================= LOGIN ================= */
@@ -108,7 +111,7 @@ function logout(){
   location.reload();
 }
 
-/* ================= SPREADSHEET TERBARU ================= */
+/* ================= SPREADSHEET ================= */
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRkxnLr5GK_w_WRktgY-SZZ2pjBHlDVSphEYLLSBLntg0IyQB3Z5178wjaES8-yMQV7ZcMTGym-VoZA/pub?gid=0&single=true&output=csv";
 
 /* ================= LOAD DATA ================= */
@@ -120,17 +123,23 @@ async function loadData(){
   headers = parsed.shift();
   rows = parsed;
 
+  headers.forEach((h,i)=>{
+    headerMap[h.trim()] = i;
+  });
+
   renderHead();
   render();
   buildCharts();
 }
 
-/* ================= PARSE CSV AMAN ================= */
+/* ================= PARSE CSV ================= */
 function parseCSV(text){
   const rows = [];
   const lines = text.split("\n");
 
   for(let line of lines){
+    if(!line.trim()) continue;
+
     const result = [];
     let current = '';
     let insideQuotes = false;
@@ -138,7 +147,7 @@ function parseCSV(text){
     for(let i=0;i<line.length;i++){
       const char = line[i];
 
-      if(char === '"' ){
+      if(char === '"'){
         insideQuotes = !insideQuotes;
       } 
       else if(char === ',' && !insideQuotes){
@@ -155,27 +164,43 @@ function parseCSV(text){
   return rows;
 }
 
+/* ================= KOLOM YANG DIHILANGKAN ================= */
+const hiddenColumns = [
+  "Submission ID",
+  "Respondent ID",
+  "Submitted at",
+  "Pass Photo"
+];
+
 /* ================= FILTER ================= */
 function filterRows(){
   let f=document.getElementById("search").value.toLowerCase();
+
   return rows.filter(r=>{
-    let komis=r[13]; // kolom komisariat
-    if(role!=="ALL" && komis!==role) return false;
+    const komis = r[ headerMap["Komisariat"] ];
+    if(role!=="ALL" && komis !== role) return false;
     return r.join(" ").toLowerCase().includes(f);
   });
 }
 
 /* ================= TABLE ================= */
 function renderHead(){
-  document.getElementById("thead").innerHTML=headers.map(x=>`<th class="p-2 border">${x}</th>`).join("");
+  const filteredHeaders = headers.filter(h => !hiddenColumns.includes(h));
+  document.getElementById("thead").innerHTML =
+    filteredHeaders.map(x=>`<th class="p-2 border">${x}</th>`).join("");
 }
 
 function render(){
-  let d=filterRows();
-  document.getElementById("tbody").innerHTML=d.map(r=>`
+  const d = filterRows();
+  const visibleIndexes = headers
+    .map((h,i)=> hiddenColumns.includes(h) ? null : i)
+    .filter(i=>i!==null);
+
+  document.getElementById("tbody").innerHTML = d.map(r=>`
     <tr>
-      ${r.map(c=>`<td class="border p-1">${c}</td>`).join("")}
-    </tr>`).join("");
+      ${visibleIndexes.map(i=>`<td class="border p-1">${r[i]||""}</td>`).join("")}
+    </tr>
+  `).join("");
 }
 
 /* ================= TABS ================= */
@@ -188,8 +213,18 @@ function showTab(id,btn){
 
 /* ================= DOWNLOAD ================= */
 function downloadCSV(){
-  let d=filterRows();
-  let csv=[headers.join(","),...d.map(r=>r.join(","))].join("\n");
+  const d = filterRows();
+  const visibleIndexes = headers
+    .map((h,i)=> hiddenColumns.includes(h) ? null : i)
+    .filter(i=>i!==null);
+
+  const filteredHeaders = headers.filter(h => !hiddenColumns.includes(h));
+
+  let csv = [
+    filteredHeaders.join(","),
+    ...d.map(r=>visibleIndexes.map(i=>r[i]).join(","))
+  ].join("\n");
+
   let blob=new Blob([csv],{type:"text/csv"});
   let a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
@@ -203,8 +238,16 @@ function buildCharts(){
   let komis={}, kampus={};
 
   rows.forEach(r=>{
-    komis[r[13]]=(komis[r[13]]||0)+1;
-    kampus[r[12]]=(kampus[r[12]]||0)+1;
+    const komisariat = r[ headerMap["Komisariat"] ];
+    const perguruan  = r[ headerMap["Perguruan Tinggi"] ];
+
+    if(komisariat){
+      komis[komisariat]=(komis[komisariat]||0)+1;
+    }
+
+    if(perguruan){
+      kampus[perguruan]=(kampus[perguruan]||0)+1;
+    }
   });
 
   if(chartA) chartA.destroy();
@@ -212,15 +255,19 @@ function buildCharts(){
 
   chartA=new Chart(document.getElementById("chart1"),{
     type:"bar",
-    data:{labels:Object.keys(komis),
-    datasets:[{data:Object.values(komis)}]},
+    data:{
+      labels:Object.keys(komis),
+      datasets:[{data:Object.values(komis)}]
+    },
     options:{indexAxis:"y",plugins:{legend:{display:false}}}
   });
 
   chartB=new Chart(document.getElementById("chart2"),{
     type:"bar",
-    data:{labels:Object.keys(kampus),
-    datasets:[{data:Object.values(kampus)}]},
+    data:{
+      labels:Object.keys(kampus),
+      datasets:[{data:Object.values(kampus)}]
+    },
     options:{indexAxis:"y",plugins:{legend:{display:false}}}
   });
 }
